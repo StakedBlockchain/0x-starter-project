@@ -1,4 +1,5 @@
 {
+    "allowSyntheticDefaultImports": true,
     "compilerOptions": {
         "outDir": "lib",
         "lib": ["es2017"],
