@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+
+  <title>Relayer Order</title>
+
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+</head>
+
+<body>
+  <div class="container">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        Fill Order
+      </div>
+
+      <div class="panel-body">
+        <form name-"order">
+          <div class="form-group">
+            <label>YOUR ADDRESS</label>
+            <input type="text" name="address" class="form-control" placeholder="" readonly="readonly" value="">
+          </div>
+          <div class="form-group">
+            <label>YOUR BALANCE</label>
+            <input type="text" name="balance" class="form-control" placeholder="" readonly="readonly" value="">
+          </div>
+          <div class="form-group">
+            <label>WETH Amount*</label>
+            <input type="text" name="makerAmount" class="form-control" placeholder="" value="0.0001">
+          </div>
+          <div class="form-group">
+            <label>ZRX Amount*</label>
+            <input type="text" name="takerAmount" class="form-control" placeholder="" value="10">
+          </div>
+          <div class="form-group">
+            <label>Expiration*</label>
+            <input type="text" name="expiration" class="form-control" placeholder="">
+          </div>
+          <div class="form-group">
+            <label>Taker</label>
+            <input type="text" name="taker" class="form-control" placeholder="">
+          </div>
+          <button type="button" id="submit-button" class="btn btn-default">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/ethereum/web3.js@1.0.0-beta.36/dist/web3.min.js"></script>
+<script>
+  window.addEventListener('load', function () {
+    if (typeof web3 !== 'undefined') {
+      startApp();
+    } else {
+      console.log('MetaMaskをインストールして下さい');
+    }
+  });
+
+  $(document).ready(function() {
+    let web3 = new Web3(window.web3.currentProvider);
+    let address = web3.eth.getAccounts();
+  });
+
+  $('#submit-button').click(function() {
+    const expiration = $('input[name="exiration"]').val();
+    const expirationTimestamp = Math.floor(new Date(2018, 12, 20, 15, 40).getTime() / 1000);
+
+    $.ajax({
+      url: 'http://localhost:3001/v2/order',
+      type: 'POST',
+      data: {
+        'address': $('input[name="address"]').val(),
+        'makerAmount': $('input[name="makerAmount"]').val(),
+        'takerAmount': $('input[name="takerAmount"]').val(),
+        'expiration': expirationTimestamp,
+        'taker': $('input[name="taker"]').val()
+      }
+    }).done((data) => {
+      console.log(data);
+    }).fail((err) => {
+      alert('error!');
+      console.log(err);
+    }).always((data) => {
+      console.log(data);
+    });
+  });
+
+  function startApp() {
+    web3 = new Web3(web3.currentProvider);
+    web3.eth.getAccounts(function(error, accounts) {
+      if (error) return;
+
+      let user_account = accounts[0];
+      if (typeof user_account != 'undefined') {
+        getBalance(user_account);
+        $('input[name="address"]').val(user_account);
+      } else {
+        console.log("ログインして下さい");
+      }
+    });
+  }
+
+  function getBalance(_address) {
+    web3.eth.getBalance(_address, (error, balance) => {
+      if (error) return;
+
+      const balanceEther = web3.utils.fromWei(balance, 'ether');
+      console.log(balanceEther);
+      $('input[name="balance"]').val(balanceEther);
+    });
+  }
+</script>
+</body>
+</html>

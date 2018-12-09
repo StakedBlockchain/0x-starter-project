@@ -22,7 +22,8 @@
         "scenario:forwarder_buy_erc20_tokens": "cross-env yarn build && node ./lib/scenarios/forwarder_buy_erc20_tokens.js",
         "scenario:forwarder_buy_erc721_tokens": "cross-env yarn build && node ./lib/scenarios/forwarder_buy_erc721_tokens.js",
         "scenario:exchange_subscribe": "cross-env yarn build && node ./lib/scenarios/exchange_subscribe.js",
-        "start": "cross-env yarn build && node ./lib/index.js"
+        "start": "cross-env yarn build && node ./lib/index.js",
+        "start:view": "live-server ./view/"
     },
     "config": {
         "mnemonic": "concert load couple harbor equip island argue ramp clarify fence smart topic",
@@ -44,6 +45,7 @@
         "copyfiles": "^2.0.0",
         "express": "^4.16.3",
         "http": "^0.0.0",
+        "live-server": "^1.2.1",
         "lodash": "^4.17.5",
         "ora": "^2.1.0",
         "run-s": "^0.0.0",
