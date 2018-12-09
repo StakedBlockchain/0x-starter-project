@@ -37,10 +37,18 @@ const ordersByHash: { [hash: string]: SignedOrder } = {};
 
 // HTTP Server
 const app = express();
+app.use(bodyParser.urlencoded({
+    extended: true,
+}));
 app.use(bodyParser.json());
 
+app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+    next();
+});
+
 app.get('/v2/order', async (req, res) => {
-    console.log('HTTP: GET order');
     const makerAssetProxyId = req.query.makerAssetProxyId;
     const takerAssetProxyId = req.query.takerAssetProxyId;
 
@@ -58,59 +66,33 @@ app.get('/v2/order', async (req, res) => {
 });
 
 app.post('/v2/order', async (req, res) => {
-    console.log('HTTP: POST order');
-
-    /*
-    {exchange: '0x48bacb9266a570d521063ef5dd96e61686dbe788',
-     erc20Proxy: '0x1dc4c1cefef38a777b15aa20260a54e584b16c48',
-     erc721Proxy: '0x1d7022f5b17d2f8b695918fb48fa1089c9f85401',
-     zrxToken: '0x871dd7c2b4b25e1aa18728e9d5f2af4c4e431f5c',
-     etherToken: '0x0b1ba0af832d7c05fd64161e0db78e85978e8082',
-     assetProxyOwner: '0x34d402f14d58e001d8efbe6585051bf9706aa064',
-     forwarder: '0xb69e673309512a9d726f87304c6984054f87a93b',
-     orderValidator: '0xe86bb98fcf9bff3512c74589b78fb168200cc546'}
-    */
+    const maker = req.body.address.toLowerCase();
+    const taker = !req.body.taker ? req.body.taker.toLowerCase() : NULL_ADDRESS;
+    // @NOTE: 動的に変更する
+    const makerAssetType = 'etherToken';
+    const takerAssetType = 'zrxToken';
+    const makerAmount = req.body.makerAmount;
+    const takerAmount = req.body.takerAmount;
+    const expiration = req.body.expiration;
 
     // Initialize the ContractWrappers, this provides helper functions around calling
     const contractWrappers = new ContractWrappers(providerEngine, getContractWrappersConfig(NETWORK_CONFIGS.networkId));
     const web3Wrapper = new Web3Wrapper(providerEngine);
-    const [maker, taker] = await web3Wrapper.getAvailableAddressesAsync();
     const contractAddresses = getContractAddressesForNetwork(NETWORK_CONFIGS.networkId);
-    const makerTokenAddress = contractAddresses.zrxToken;
-    const takerTokenAddress = contractAddresses.etherToken;
+    const makerTokenAddress = contractAddresses[makerAssetType];
+    const takerTokenAddress = contractAddresses[takerAssetType];
 
     // Initialize the Web3Wrapper, this provides helper functions around fetching
     const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
     const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
     // the amount the maker is selling of maker asset
-    const makerAssetAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(5), DECIMALS);
+    const makerAssetAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(makerAmount), DECIMALS);
     // the amount the maker wants of taker asset
-    const takerAssetAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(0.1), DECIMALS);
-
-    // Allow the 0x ERC20 Proxy to move ZRX on behalf of makerAccount
-    const makerZRXApprovalTxHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
-        makerTokenAddress,
-        maker,
-    );
-    await web3Wrapper.awaitTransactionSuccessAsync(makerZRXApprovalTxHash);
-
-    // Allow the 0x ERC20 Proxy to move WETH on behalf of takerAccount
-    const takerWETHApprovalTxHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
-        takerTokenAddress,
-        taker,
-    );
-    await web3Wrapper.awaitTransactionSuccessAsync(takerWETHApprovalTxHash);
-
-    // Convert ETH into WETH for taker by depositing ETH into the WETH contract
-    const takerWETHDepositTxHash = await contractWrappers.etherToken.depositAsync(
-        takerTokenAddress,
-        takerAssetAmount,
-        taker,
-    );
-    await web3Wrapper.awaitTransactionSuccessAsync(takerWETHDepositTxHash);
+    const takerAssetAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(takerAmount), DECIMALS);
 
     // Set up the Order and fill it
-    const randomExpiration = getRandomFutureDateInSeconds();
+    // @NOTE: UNIX TIME
+    const randomExpiration = expiration;
     const exchangeAddress = contractAddresses.exchange;
 
     // Create the order
@@ -130,34 +112,17 @@ app.post('/v2/order', async (req, res) => {
         takerFee: ZERO,
     };
 
-    // Generate the order hash and sign it
-    const orderHashHex = orderHashUtils.getOrderHashHex(order);
-    const signature = await signatureUtils.ecSignHashAsync(providerEngine, orderHashHex, maker);
-    const signedOrder = { ...order, signature };
-
-    await contractWrappers.exchange.validateFillOrderThrowIfInvalidAsync(signedOrder, takerAssetAmount, taker);
-
-    const txHash = await contractWrappers.exchange.fillOrderAsync(signedOrder, takerAssetAmount, taker, {
-        gasLimit: TX_DEFAULTS.gas,
-    });
-    await web3Wrapper.awaitTransactionSuccessAsync(txHash);
-
-    const option = {
-        url: RELAYER_URL + '/order',
-        method: 'POST',
-        body: signedOrder,
-        json: true,
-    };
-    request(option, (err, response, body) => {
-        if (err) {
-            res.status(HTTP_BAD_REQUEST_STATUS).send({});
-        }
-
-        res.status(HTTP_OK_STATUS).send(body);
-    });
-
     // Stop the Provider Engine
     providerEngine.stop();
+
+    // Generate the order hash and sign it
+    const orderHashHex = orderHashUtils.getOrderHashHex(order);
+
+    // Return the order hash
+    res.status(HTTP_OK_STATUS).json({
+      'status': 'success',
+      'orderHash': orderHashHex,
+    });
 });
 
 app.listen(HTTP_PORT, () => console.log(`API (HTTP) listening on port ${HTTP_PORT}!`));
