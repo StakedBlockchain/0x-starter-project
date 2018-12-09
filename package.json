@@ -21,7 +21,8 @@
         "scenario:cancel_orders_up_to": "cross-env yarn build && node ./lib/scenarios/cancel_orders_up_to.js",
         "scenario:forwarder_buy_erc20_tokens": "cross-env yarn build && node ./lib/scenarios/forwarder_buy_erc20_tokens.js",
         "scenario:forwarder_buy_erc721_tokens": "cross-env yarn build && node ./lib/scenarios/forwarder_buy_erc721_tokens.js",
-        "scenario:exchange_subscribe": "cross-env yarn build && node ./lib/scenarios/exchange_subscribe.js"
+        "scenario:exchange_subscribe": "cross-env yarn build && node ./lib/scenarios/exchange_subscribe.js",
+        "start": "cross-env yarn build && node ./lib/index.js"
     },
     "config": {
         "mnemonic": "concert load couple harbor equip island argue ramp clarify fence smart topic",
@@ -37,6 +38,7 @@
         "@0x/contract-artifacts": "^1.0.1",
         "@0x/subproviders": "^2.0.7",
         "@0x/web3-wrapper": "^3.1.0",
+        "@types/request": "^2.48.1",
         "body-parser": "^1.18.3",
         "cli-table": "^0.3.1",
         "copyfiles": "^2.0.0",
