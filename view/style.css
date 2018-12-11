@@ -1,0 +1,22 @@
+.body-header{
+    height:70px;
+    padding:7px 170px;
+    border-bottom: solid 1px rgb(218, 216, 216);
+    box-shadow: 0 0 3px rgb(153, 152, 152);
+}
+
+.header1{
+    font-size:40px;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    float: left;
+}
+
+.header2{
+    font-size:40px;
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    float: right;
+}
+
+.container{
+    margin-top:50px;
+}
