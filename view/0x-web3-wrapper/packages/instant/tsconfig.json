@@ -1,0 +1,12 @@
+{
+    "extends": "../../tsconfig",
+    "compilerOptions": {
+        "outDir": "lib",
+        "rootDir": "src",
+        "jsx": "react",
+        "noImplicitAny": true,
+        "allowSyntheticDefaultImports": true
+    },
+    "include": ["./src/**/*"],
+    "exclude": ["./src/index.umd.ts"]
+}
