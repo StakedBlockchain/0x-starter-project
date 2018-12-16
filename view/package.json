@@ -1,6 +1,21 @@
 {
   "name": "relayer_view",
   "version": "1.0.0",
+  "scripts": {
+    "build": "webpack",
+    "start": "webpack-dev-server --hot --inline"
+  },
   "main": "index.js",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "0x.js": "^2.0.6",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^8.0.4",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "react": "^16.6.3",
+    "react-dom": "^16.6.3",
+    "webpack": "^4.27.1",
+    "webpack-dev-server": "^3.1.10"
+  }
 }

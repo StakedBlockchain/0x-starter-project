@@ -19,11 +19,11 @@ import * as bodyParser from 'body-parser';
 import * as express from 'express';
 import * as request from 'request';
 
-import { DECIMALS, NULL_ADDRESS, ZERO } from './constants';
-import { getContractAddressesForNetwork, getContractWrappersConfig } from './contracts';
-import { getRandomFutureDateInSeconds } from './utils';
 import { NETWORK_CONFIGS, TX_DEFAULTS } from './configs';
+import { DECIMALS, NULL_ADDRESS, ZERO } from './constants';
+import { contractAddresses } from './contracts';
 import { providerEngine } from './provider_engine';
+import { getRandomFutureDateInSeconds } from './utils';
 
 const HTTP_OK_STATUS = 200;
 const HTTP_BAD_REQUEST_STATUS = 400;
@@ -48,7 +48,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.get('/v2/order', async (req, res) => {
+app.get('/orders', async (req, res) => {
     const makerAssetProxyId = req.query.makerAssetProxyId;
     const takerAssetProxyId = req.query.takerAssetProxyId;
 
@@ -65,7 +65,7 @@ app.get('/v2/order', async (req, res) => {
     });
 });
 
-app.post('/v2/order', async (req, res) => {
+app.post('/order', async (req, res) => {
     const maker = req.body.address.toLowerCase();
     const taker = !req.body.taker ? req.body.taker.toLowerCase() : NULL_ADDRESS;
     // @NOTE: 動的に変更する
@@ -76,9 +76,8 @@ app.post('/v2/order', async (req, res) => {
     const expiration = req.body.expiration;
 
     // Initialize the ContractWrappers, this provides helper functions around calling
-    const contractWrappers = new ContractWrappers(providerEngine, getContractWrappersConfig(NETWORK_CONFIGS.networkId));
+    const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
     const web3Wrapper = new Web3Wrapper(providerEngine);
-    const contractAddresses = getContractAddressesForNetwork(NETWORK_CONFIGS.networkId);
     const makerTokenAddress = contractAddresses[makerAssetType];
     const takerTokenAddress = contractAddresses[takerAssetType];
 
@@ -121,6 +120,7 @@ app.post('/v2/order', async (req, res) => {
     // Return the order hash
     res.status(HTTP_OK_STATUS).json({
       'status': 'success',
+      'order': order,
       'orderHash': orderHashHex,
     });
 });
