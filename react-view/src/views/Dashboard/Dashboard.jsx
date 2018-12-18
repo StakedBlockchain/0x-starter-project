@@ -169,7 +169,7 @@ class Dashboard extends React.Component {
     console.log('order:', this.state.orderList[id].order);
 
     try {
-      const signedOrder = this.state.orderList[0].order;
+      const signedOrder = this.state.orderList[id].order;
       const taker = this.state.fillAddress;
       const takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
       signedOrder.makerAssetAmount = new BigNumber(signedOrder.makerAssetAmount);
