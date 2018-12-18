@@ -22,6 +22,7 @@ import web3 from "../../web3";
 import {
   assetDataUtils,
   BigNumber,
+  ContractWrappers,
   generatePseudoRandomSalt,
   orderHashUtils,
   signatureUtils
@@ -29,10 +30,14 @@ import {
 import { Web3Wrapper } from '@0x/web3-wrapper';
 
 import {
+  NETWORK_CONFIGS,
+  TX_DEFAULTS
+} from '../../configs';
+
+import {
   DECIMALS,
   NULL_ADDRESS,
   RELAYER_HOST,
-  UNLIMITED_ALLOWANCE_IN_BASE_UNITS,
   ZERO
 } from "../../constants";
 
@@ -62,7 +67,7 @@ class Dashboard extends React.Component {
   state = {
     address: '',
     balance: 0,
-    makerAmount: 0.001,
+    makerAmount: 0.01,
     takerAmount: 10,
     expiration: 0,
     taker: '',
@@ -79,8 +84,8 @@ class Dashboard extends React.Component {
 
   async componentDidMount() {
     const addresses = await web3.eth.getAccounts();
-    await this.setState({ address: addresses[0] });
-    await this.setState({ fillAddress: addresses[0] });
+    await this.setState({ address: addresses[0].toLowerCase() });
+    await this.setState({ fillAddress: addresses[0].toLowerCase() });
 
     const balance = await web3.eth.getBalance(addresses[0]);
     await this.setState({ balance: await web3.utils.fromWei(balance, 'ether') });
@@ -94,7 +99,8 @@ class Dashboard extends React.Component {
         const dataList = res.data.records;
         await this.setState({ orderList: dataList });
       }).catch((err) => {
-        console.log(err);
+        console.error(err);
+        alert('ERROR\n' + err.message);
       });
   }
 
@@ -114,7 +120,7 @@ class Dashboard extends React.Component {
     const takerAssetType = 'zrxToken';
     const makerAmount = this.state.makerAmount;
     const takerAmount = this.state.takerAmount;
-    const expiration = UNLIMITED_ALLOWANCE_IN_BASE_UNITS;
+    const expiration = "1550161320";
 
     const providerEngine = metamaskProvider(web3.currentProvider);
     const makerTokenAddress = contractAddresses[makerAssetType];
@@ -132,6 +138,7 @@ class Dashboard extends React.Component {
       makerAddress: maker,
       takerAddress: taker,
       senderAddress: NULL_ADDRESS,
+      // @TODO: feeRecipientAddressの設定
       feeRecipientAddress: NULL_ADDRESS,
       expirationTimeSeconds: expiration,
       salt: generatePseudoRandomSalt(),
@@ -139,6 +146,7 @@ class Dashboard extends React.Component {
       takerAssetAmount,
       makerAssetData,
       takerAssetData,
+      // @TODO: 手数料の調整
       makerFee: ZERO,
       takerFee: ZERO,
     };
@@ -152,12 +160,35 @@ class Dashboard extends React.Component {
       .then((res) => {
         console.log(res);
       }).catch((err) => {
-        console.log(err);
+        console.error(err);
+        alert('ERROR\n' + err.message);
       });
   };
 
-  orderClick = async() => {
+  orderClick = async(id) => {
+    console.log('order:', this.state.orderList[id].order);
 
+    try {
+      const signedOrder = this.state.orderList[0].order;
+      const taker = this.state.fillAddress;
+      const takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
+      signedOrder.makerAssetAmount = new BigNumber(signedOrder.makerAssetAmount);
+      signedOrder.takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
+      signedOrder.expirationTimeSeconds = new BigNumber(signedOrder.expirationTimeSeconds);
+
+      const providerEngine = metamaskProvider(web3.currentProvider);
+      const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
+      await contractWrappers.exchange.validateFillOrderThrowIfInvalidAsync(signedOrder, takerAssetAmount, taker);
+
+      // Fill the Order via 0x Exchange contract
+      const txHash = await contractWrappers.exchange.fillOrderAsync(signedOrder, takerAssetAmount, taker, {
+        gasLimit: TX_DEFAULTS.gas,
+      });
+      console.log('txHash:', txHash);
+    } catch (err) {
+      console.error(err);
+      alert('ERROR\n' + err.message);
+    };
   }
 
   executeOrderClick = async() => {
@@ -289,7 +320,7 @@ class Dashboard extends React.Component {
                   <TableBody>
                     {this.state.orderList.map((prop, key) => {
                       return (
-                        <TableRow key={key}>
+                        <TableRow key={key} onClick={ () => this.orderClick(key) }>
                           <TableCell className={classes.tableCell}>
                             {web3.utils.fromWei(prop.order.makerAssetAmount, 'ether')}
                           </TableCell>
@@ -408,15 +439,5 @@ class Dashboard extends React.Component {
     );
   }
 }
-
-// plasma wallet のフォーム実装見る
-// 2つ関数を用意する
-// onchange => 入力されるたんびにsetstateされる
-// stateにフォームの値が入ってる
-// formclick
-
-// Dashboard.propTypes = {
-//   classes: PropTypes.object.isRequired
-// };
 
 export default withStyles(styles, tableStyle)(Dashboard);
