@@ -18,6 +18,7 @@ import CardBody from "components/Card/CardBody.jsx";
 import CardFooter from "components/Card/CardFooter.jsx";
 
 import axios from 'axios';
+import moment from 'moment';
 import web3 from "../../web3";
 import {
   assetDataUtils,
@@ -60,7 +61,7 @@ const styles = {
     fontFamily: "'Roboto', 'Helvetica', 'Arial', sans-serif",
     marginBottom: "3px",
     textDecoration: "none"
-  }
+  },
 };
 
 class Dashboard extends React.Component {
@@ -79,6 +80,7 @@ class Dashboard extends React.Component {
     fillExpiration: 0,
     fillTaker: '',
 
+    selectedOrderIndex: null,
     orderList: []
   };
 
@@ -92,7 +94,18 @@ class Dashboard extends React.Component {
     await this.setState({ fillBalance: await web3.utils.fromWei(balance, 'ether') });
 
     metamaskProvider(web3.currentProvider);
+    await this.reloadOrder();
+  }
 
+  handleChange = (event, value) => {
+    this.setState({ value });
+  };
+
+  handleChangeIndex = index => {
+    this.setState({ value: index });
+  };
+
+  reloadOrder = async() => {
     axios
       .get(RELAYER_HOST + '/v2/orders')
       .then(async (res) => {
@@ -103,14 +116,6 @@ class Dashboard extends React.Component {
         alert('ERROR\n' + err.message);
       });
   }
-
-  handleChange = (event, value) => {
-    this.setState({ value });
-  };
-
-  handleChangeIndex = index => {
-    this.setState({ value: index });
-  };
 
   submitOrderClick = async() => {
     const maker = this.state.address.toLowerCase();
@@ -157,19 +162,34 @@ class Dashboard extends React.Component {
 
     axios
       .post(RELAYER_HOST + '/v2/order', signedOrder)
-      .then((res) => {
+      .then(async (res) => {
         console.log(res);
+
+        await this.reloadOrder();
       }).catch((err) => {
         console.error(err);
         alert('ERROR\n' + err.message);
       });
   };
 
-  orderClick = async(id) => {
-    console.log('order:', this.state.orderList[id].order);
+  orderClick = async(index) => {
+    console.log('order:', this.state.orderList[index].order);
 
+    // set index
+    await this.setState({ selectedOrderIndex: index });
+
+    // set order
+    const order = this.state.orderList[index].order;
+    await this.setState({ fillMakerAmount: await web3.utils.fromWei(order.makerAssetAmount, 'ether') });
+    await this.setState({ fillTakerAmount: await web3.utils.fromWei(order.takerAssetAmount, 'ether') });
+    await this.setState({ fillExpiration: moment(new Date(order.expirationTimeSeconds * 1000)).format('YYYY-MM-DD HH:mm') });
+    await this.setState({ fillTaker: order.fillTaker });
+  }
+
+  executeOrderClick = async() => {
     try {
-      const signedOrder = this.state.orderList[id].order;
+      const index = this.state.selectedOrderIndex;
+      const signedOrder = this.state.orderList[index].order;
       const taker = this.state.fillAddress;
       const takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
       signedOrder.makerAssetAmount = new BigNumber(signedOrder.makerAssetAmount);
@@ -188,16 +208,11 @@ class Dashboard extends React.Component {
     } catch (err) {
       console.error(err);
       alert('ERROR\n' + err.message);
-    };
-  }
-
-  executeOrderClick = async() => {
-    const maker = this.state.fillAddress.toLowerCase();
-    const taker = !this.state.fillTaker ? NULL_ADDRESS : this.state.fillTaker.toLowerCase();
+    }
   }
 
   render() {
-    const { classes, tableHeaderColor } = this.props;
+    const { classes, tableHeaderColor, onSelectAllClick } = this.props;
     return (
       <div>
         <GridContainer>
@@ -320,7 +335,7 @@ class Dashboard extends React.Component {
                   <TableBody>
                     {this.state.orderList.map((prop, key) => {
                       return (
-                        <TableRow key={key} onClick={ () => this.orderClick(key) }>
+                        <TableRow key={key} onClick={ () => this.orderClick(key) } hover={true}>
                           <TableCell className={classes.tableCell}>
                             {web3.utils.fromWei(prop.order.makerAssetAmount, 'ether')}
                           </TableCell>

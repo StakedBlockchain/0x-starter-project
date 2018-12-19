@@ -9,7 +9,6 @@ import Notifications from "@material-ui/icons/Notifications";
 import Unarchive from "@material-ui/icons/Unarchive";
 // core components/views
 import DashboardPage from "views/Dashboard/Dashboard.jsx";
-import Demo from "views/Demo/Demo.jsx";
 import UserProfile from "views/UserProfile/UserProfile.jsx";
 import TableList from "views/TableList/TableList.jsx";
 import Typography from "views/Typography/Typography.jsx";
@@ -22,17 +21,11 @@ const dashboardRoutes = [
   {
     path: "/dashboard",
     sidebarName: "Dashboard",
-    navbarName: "Material Dashboard",
+    navbarName: "Staked",
     icon: Dashboard,
     component: DashboardPage
   },
-  {
-    path: "/demo",
-    sidebarName: "Staked Relayer",
-    navbarName: "Staked Relayer",
-    icon: Person,
-    component: Demo
-  },
+  /*
   {
     path: "/user",
     sidebarName: "User Profile",
@@ -75,13 +68,7 @@ const dashboardRoutes = [
     icon: Notifications,
     component: NotificationsPage
   },
-  {
-    path: "/upgrade-to-pro",
-    sidebarName: "Upgrade To PRO",
-    navbarName: "Upgrade To PRO",
-    icon: Unarchive,
-    component: UpgradeToPro
-  },
+  */
   { redirect: true, path: "/", to: "/dashboard", navbarName: "Redirect" }
 ];
 
