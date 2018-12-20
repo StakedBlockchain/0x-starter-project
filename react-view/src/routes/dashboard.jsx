@@ -19,48 +19,55 @@ import UpgradeToPro from "views/UpgradeToPro/UpgradeToPro.jsx";
 
 const dashboardRoutes = [
   {
+    path: "/home",
+    sidebarName: "Home",
+    navbarName: "Staked",
+    icon: Dashboard,
+    component: DashboardPage
+  },
+  {
     path: "/dashboard",
     sidebarName: "Dashboard",
     navbarName: "Staked",
     icon: Dashboard,
     component: DashboardPage
   },
-  /*
   {
     path: "/user",
-    sidebarName: "User Profile",
-    navbarName: "Profile",
+    sidebarName: "Wrap / Alloance",
+    navbarName: "Wrap / Alloance",
     icon: Person,
     component: UserProfile
   },
   {
     path: "/table",
-    sidebarName: "Table List",
-    navbarName: "Table List",
+    sidebarName: "Orders",
+    navbarName: "Orders",
     icon: "content_paste",
     component: TableList
   },
   {
     path: "/typography",
-    sidebarName: "Typography",
-    navbarName: "Typography",
+    sidebarName: "Trade History",
+    navbarName: "Trade History",
     icon: LibraryBooks,
     component: Typography
   },
   {
     path: "/icons",
-    sidebarName: "Icons",
-    navbarName: "Icons",
+    sidebarName: "Advanced",
+    navbarName: "Advanced",
     icon: BubbleChart,
     component: Icons
   },
   {
     path: "/maps",
-    sidebarName: "Maps",
-    navbarName: "Map",
+    sidebarName: "SNS",
+    navbarName: "SNS",
     icon: LocationOn,
     component: Maps
   },
+  /*
   {
     path: "/notifications",
     sidebarName: "Notifications",
@@ -69,6 +76,13 @@ const dashboardRoutes = [
     component: NotificationsPage
   },
   */
+  {
+    path: "/upgrade-to-pro",
+    sidebarName: "Contact",
+    navbarName: "Contact",
+    icon: Unarchive,
+    component: UpgradeToPro
+  },
   { redirect: true, path: "/", to: "/dashboard", navbarName: "Redirect" }
 ];
 
