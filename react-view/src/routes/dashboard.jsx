@@ -9,8 +9,8 @@ import Notifications from "@material-ui/icons/Notifications";
 import Unarchive from "@material-ui/icons/Unarchive";
 // core components/views
 import DashboardPage from "views/Dashboard/Dashboard.jsx";
-import UserProfile from "views/UserProfile/UserProfile.jsx";
-import TableList from "views/TableList/TableList.jsx";
+import Home from "views/Home/Home.jsx";
+import WrapAllowance from "views/WrapAllowance/WrapAllowance.jsx";
 import Typography from "views/Typography/Typography.jsx";
 import Icons from "views/Icons/Icons.jsx";
 import Maps from "views/Maps/Maps.jsx";
@@ -23,7 +23,7 @@ const dashboardRoutes = [
     sidebarName: "Home",
     navbarName: "Staked",
     icon: Dashboard,
-    component: DashboardPage
+    component: Home
   },
   {
     path: "/dashboard",
@@ -33,18 +33,18 @@ const dashboardRoutes = [
     component: DashboardPage
   },
   {
-    path: "/user",
+    path: "/wrap_allowance",
     sidebarName: "Wrap / Alloance",
     navbarName: "Wrap / Alloance",
     icon: Person,
-    component: UserProfile
+    component: WrapAllowance
   },
   {
-    path: "/table",
+    path: "/orders",
     sidebarName: "Orders",
     navbarName: "Orders",
     icon: "content_paste",
-    component: TableList
+    component: WrapAllowance
   },
   {
     path: "/typography",
