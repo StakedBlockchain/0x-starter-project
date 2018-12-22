@@ -1,4 +1,4 @@
-import React from "react";
+import React, { Component } from "react";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import tableStyle from "assets/jss/material-dashboard-react/components/tableStyle.jsx";
@@ -64,12 +64,12 @@ const styles = {
   },
 };
 
-class Dashboard extends React.Component {
+class Dashboard extends Component {
   state = {
     address: '',
     balance: 0,
-    makerAmount: 0.01,
-    takerAmount: 10,
+    makerAmount: 0,
+    takerAmount: 0,
     expiration: 0,
     taker: '',
 
@@ -97,13 +97,9 @@ class Dashboard extends React.Component {
     await this.reloadOrder();
   }
 
-  handleChange = (event, value) => {
-    this.setState({ value });
-  };
-
   handleChangeIndex = index => {
     this.setState({ value: index });
-  };
+  }
 
   reloadOrder = async() => {
     axios
@@ -212,14 +208,14 @@ class Dashboard extends React.Component {
   }
 
   render() {
-    const { classes, tableHeaderColor, onSelectAllClick } = this.props;
+    const { classes, tableHeaderColor } = this.props;
     return (
       <div>
         <GridContainer>
-          <GridItem xs={12} sm={12} md={4}>
+        <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Generate Order</h4>
+                <h4 className={classes.cardTitleWhite}>Wallet Information</h4>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -227,13 +223,12 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="YOUR ADDRESS"
                       id="your-address"
-                      onChange={ event => this.setState({ address: event.target.value }) }
+                      value={this.state.address}
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
-                        readOnly: true,
-                        value: this.state.address
+                        readOnly: true
                       }}
                     />
                   </GridItem>
@@ -250,16 +245,25 @@ class Dashboard extends React.Component {
                       }}
                     />
                   </GridItem>
+                </GridContainer>
+              </CardBody>
+            </Card>
+          </GridItem>
+          <GridItem xs={12} sm={12} md={4}>
+            <Card>
+              <CardHeader color="primary">
+                <h4 className={classes.cardTitleWhite}>Generate Order</h4>
+              </CardHeader>
+              <CardBody>
+                <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
                       labelText="Maker Amount(WETH)"
                       id="maker-amount"
-                      onChange={ event => this.setState({ makerAmount: event.target.value }) }
+                      value={this.state.makerAmount}
+                      onChange={event => this.setState({ makerAmount: event.target.value }) }
                       formControlProps={{
                         fullWidth: true
-                      }}
-                      inputProps={{
-                        value: this.state.makerAmount
                       }}
                     />
                   </GridItem>
@@ -269,12 +273,10 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Taker Amount(ZRX)"
                       id="taker-amount"
-                      onChange={ event => this.setState({ takerAmount: event.target.value }) }
+                      value={this.state.takerAmount}
+                      onChange={event => this.setState({ takerAmount: event.target.value })}
                       formControlProps={{
                         fullWidth: true
-                      }}
-                      inputProps={{
-                        value: this.state.takerAmount
                       }}
                     />
                   </GridItem>
@@ -282,12 +284,10 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Expiration"
                       id="expiration"
-                      onChange={ event => this.setState({ expiration: event.target.value }) }
+                      value={this.state.expiration}
+                      onChange={event => this.setState({ expiration: event.target.value })}
                       formControlProps={{
                         fullWidth: true
-                      }}
-                      inputProps={{
-                        value: this.state.expiration
                       }}
                     />
                   </GridItem>
@@ -297,8 +297,8 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Taker"
                       id="taker"
-                      value={ this.state.taker }
-                      onChange={ event => this.setState({ taker: event.target.value }) }
+                      value={this.state.taker}
+                      onChange={event => this.setState({ taker: event.target.value })}
                       formControlProps={{
                         fullWidth: true
                       }}
@@ -359,42 +359,15 @@ class Dashboard extends React.Component {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="Fill ADDRESS"
-                      id="fill-address"
-                      onChange={ event => this.setState({ fillAddress: event.target.value }) }
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true,
-                        value: this.state.fillAddress
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Fill BALANCE"
-                      id="fill-balance"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true,
-                        value: this.state.fillBalance
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
                       labelText="Fill Maker Amount(WETH)"
                       id="fill-maker-amount"
-                      onChange={ event => this.setState({ fillMakerAmount: event.target.value }) }
+                      value={this.state.fillMakerAmount}
+                      onChange={event => this.setState({ fillMakerAmount: event.target.value })}
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
-                        readOnly: true,
-                        value: this.state.fillMakerAmount
+                        readOnly: true
                       }}
                     />
                   </GridItem>
@@ -404,13 +377,13 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Taker Amount(ZRX)"
                       id="fill-taker-amount"
-                      onChange={ event => this.setState({ fillTakerAmount: event.target.value }) }
+                      value={this.state.fillTakerAmount}
+                      onChange={event => this.setState({ fillTakerAmount: event.target.value })}
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
-                        readOnly: true,
-                        value: this.state.fillTakerAmount
+                        readOnly: true
                       }}
                     />
                   </GridItem>
@@ -418,13 +391,13 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Expiration"
                       id="fillExpiration"
-                      onChange={ event => this.setState({ fillExpiration: event.target.value }) }
+                      value={this.state.fillExpiration}
+                      onChange={event => this.setState({ fillExpiration: event.target.value })}
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
-                        readOnly: true,
-                        value: this.state.fillExpiration
+                        readOnly: true
                       }}
                     />
                   </GridItem>
@@ -434,8 +407,8 @@ class Dashboard extends React.Component {
                     <CustomInput
                       labelText="Taker"
                       id="fillTaker"
-                      value={ this.state.fillTaker }
-                      onChange={ event => this.setState({ fillTaker: event.target.value }) }
+                      value={this.state.fillTaker}
+                      onChange={event => this.setState({ fillTaker: event.target.value })}
                       formControlProps={{
                         readOnly: true,
                         fullWidth: true
@@ -445,7 +418,7 @@ class Dashboard extends React.Component {
                 </GridContainer>
               </CardBody>
               <CardFooter>
-                <Button onClick={ this.executeOrderClick } color="primary">Execute Order</Button>
+                <Button onClick={this.executeOrderClick} color="primary">Execute Order</Button>
               </CardFooter>
             </Card>
           </GridItem>
