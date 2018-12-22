@@ -18,6 +18,8 @@ function CustomInput({ ...props }) {
     formControlProps,
     labelText,
     id,
+    value,
+    onChange,
     labelProps,
     inputProps,
     error,
@@ -57,6 +59,8 @@ function CustomInput({ ...props }) {
           underline: underlineClasses
         }}
         id={id}
+        value={value}
+        onChange={onChange}
         {...inputProps}
       />
       {error ? (
