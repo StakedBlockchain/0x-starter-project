@@ -11,6 +11,10 @@ import TableCell from "@material-ui/core/TableCell";
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
 import CustomInput from "components/CustomInput/CustomInput.jsx";
+import InputLabel from '@material-ui/core/InputLabel';
+import FormControl from '@material-ui/core/FormControl';
+import Select from '@material-ui/core/Select';
+import MenuItem from '@material-ui/core/MenuItem';
 import Button from "components/CustomButtons/Button.jsx";
 import Card from "components/Card/Card.jsx";
 import CardHeader from "components/Card/CardHeader.jsx";
@@ -45,7 +49,20 @@ import {
 import { contractAddresses } from '../../contracts';
 import { metamaskProvider } from '../../provider_engine';
 
-const styles = {
+const styles = theme => ({
+  // for selectbox
+  root: {
+    display: 'flex',
+    flexWrap: 'wrap',
+  },
+  formControl: {
+    margin: theme.spacing.unit,
+    minWidth: 120,
+  },
+  selectEmpty: {
+    marginTop: theme.spacing.unit * 2,
+  },
+  // for card
   cardCategoryWhite: {
     color: "rgba(255,255,255,.62)",
     margin: "0",
@@ -62,19 +79,19 @@ const styles = {
     marginBottom: "3px",
     textDecoration: "none"
   },
-};
+});
 
-class Dashboard extends Component {
+class Orders extends Component {
   state = {
     address: '',
     balance: 0,
+    makerAssetType: 'etherToken',
+    takerAssetType: 'zrxToken',
     makerAmount: 0,
     takerAmount: 0,
     expiration: 0,
     taker: '',
 
-    fillAddress: '',
-    fillBalance: 0,
     fillMakerAmount: 0,
     fillTakerAmount: 0,
     fillExpiration: 0,
@@ -94,16 +111,33 @@ class Dashboard extends Component {
     await this.setState({ fillBalance: await web3.utils.fromWei(balance, 'ether') });
 
     metamaskProvider(web3.currentProvider);
-    await this.reloadOrder();
+    await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   }
 
   handleChangeIndex = index => {
     this.setState({ value: index });
   }
 
-  reloadOrder = async() => {
+  changeAssetType = async(e) => {
+    const stateName = e.target.name;
+    const stateValue = e.target.value;
+    await this.setState({[stateName]: stateValue});
+    await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
+  }
+
+  reloadOrder = async(makerAssetType, takerAssetType) => {
+    const makerTokenAddress = contractAddresses[makerAssetType];
+    const takerTokenAddress = contractAddresses[takerAssetType];
+    const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
+    const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
+
     axios
-      .get(RELAYER_HOST + '/v2/orders')
+      .get(RELAYER_HOST + '/v2/orders', {
+        params: {
+          'makerAssetData': makerAssetData,
+          'takerAssetData': takerAssetData
+        }
+      })
       .then(async (res) => {
         const dataList = res.data.records;
         await this.setState({ orderList: dataList });
@@ -117,8 +151,8 @@ class Dashboard extends Component {
     const maker = this.state.address.toLowerCase();
     const taker = !this.state.taker ? NULL_ADDRESS : this.state.taker.toLowerCase();
 
-    const makerAssetType = 'etherToken';
-    const takerAssetType = 'zrxToken';
+    const makerAssetType = this.state.makerAssetType;
+    const takerAssetType = this.state.takerAssetType;
     const makerAmount = this.state.makerAmount;
     const takerAmount = this.state.takerAmount;
     const expiration = "1550161320";
@@ -161,7 +195,7 @@ class Dashboard extends Component {
       .then(async (res) => {
         console.log(res);
 
-        await this.reloadOrder();
+        await this.reloadOrder(makerAssetType, takerAssetType);
       }).catch((err) => {
         console.error(err);
         alert('ERROR\n' + err.message);
@@ -186,7 +220,7 @@ class Dashboard extends Component {
     try {
       const index = this.state.selectedOrderIndex;
       const signedOrder = this.state.orderList[index].order;
-      const taker = this.state.fillAddress;
+      const taker = this.state.address;
       const takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
       signedOrder.makerAssetAmount = new BigNumber(signedOrder.makerAssetAmount);
       signedOrder.takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
@@ -257,8 +291,42 @@ class Dashboard extends Component {
               <CardBody>
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
+                    <FormControl className={classes.formControl}>
+                      <InputLabel htmlFor="maker-asset-type">MakerAssetType</InputLabel>
+                      <Select
+                        labelText="Maker Asset Type"
+                        value={this.state.makerAssetType}
+                        onChange={this.changeAssetType}
+                        inputProps={{
+                          id: 'maker-asset-type',
+                          name: 'makerAssetType'
+                        }}
+                      >
+                        <MenuItem value={'etherToken'}>WETH</MenuItem>
+                        <MenuItem value={'zrxToken'}>ZRX</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <FormControl className={classes.formControl}>
+                      <InputLabel htmlFor="taker-asset-type">TakerAssetType</InputLabel>
+                      <Select
+                        labelText="Taker Asset Type"
+                        value={this.state.takerAssetType}
+                        onChange={this.changeAssetType}
+                        inputProps={{
+                          id: 'taker-asset-type',
+                          name: 'takerAssetType'
+                        }}
+                      >
+                        <MenuItem value={'etherToken'}>WETH</MenuItem>
+                        <MenuItem value={'zrxToken'}>ZRX</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="Maker Amount(WETH)"
+                      labelText="Maker Amount"
                       id="maker-amount"
                       value={this.state.makerAmount}
                       onChange={event => this.setState({ makerAmount: event.target.value }) }
@@ -267,11 +335,9 @@ class Dashboard extends Component {
                       }}
                     />
                   </GridItem>
-                </GridContainer>
-                <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="Taker Amount(ZRX)"
+                      labelText="Taker Amount"
                       id="taker-amount"
                       value={this.state.takerAmount}
                       onChange={event => this.setState({ takerAmount: event.target.value })}
@@ -291,8 +357,6 @@ class Dashboard extends Component {
                       }}
                     />
                   </GridItem>
-                </GridContainer>
-                <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
                       labelText="Taker"
@@ -323,12 +387,12 @@ class Dashboard extends Component {
                       <TableCell
                         className={classes.tableCell + " " + classes.tableHeadCell}
                       >
-                        価格 WETH
+                        価格
                       </TableCell>
                       <TableCell
                         className={classes.tableCell + " " + classes.tableHeadCell}
                       >
-                        量 ZRX
+                        量
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -359,7 +423,7 @@ class Dashboard extends Component {
                 <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="Fill Maker Amount(WETH)"
+                      labelText="Maker Amount"
                       id="fill-maker-amount"
                       value={this.state.fillMakerAmount}
                       onChange={event => this.setState({ fillMakerAmount: event.target.value })}
@@ -371,11 +435,9 @@ class Dashboard extends Component {
                       }}
                     />
                   </GridItem>
-                </GridContainer>
-                <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="Taker Amount(ZRX)"
+                      labelText="Taker Amount"
                       id="fill-taker-amount"
                       value={this.state.fillTakerAmount}
                       onChange={event => this.setState({ fillTakerAmount: event.target.value })}
@@ -401,8 +463,6 @@ class Dashboard extends Component {
                       }}
                     />
                   </GridItem>
-                </GridContainer>
-                <GridContainer>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
                       labelText="Taker"
@@ -428,4 +488,4 @@ class Dashboard extends Component {
   }
 }
 
-export default withStyles(styles, tableStyle)(Dashboard);
+export default withStyles(styles, tableStyle)(Orders);
