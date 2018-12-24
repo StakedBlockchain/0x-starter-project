@@ -8,8 +8,8 @@ import LocationOn from "@material-ui/icons/LocationOn";
 import Notifications from "@material-ui/icons/Notifications";
 import Unarchive from "@material-ui/icons/Unarchive";
 // core components/views
-import DashboardPage from "views/Dashboard/Dashboard.jsx";
 import Home from "views/Home/Home.jsx";
+import Orders from "views/Orders/Orders.jsx";
 import WrapAllowance from "views/WrapAllowance/WrapAllowance.jsx";
 import Typography from "views/Typography/Typography.jsx";
 import Icons from "views/Icons/Icons.jsx";
@@ -26,13 +26,6 @@ const dashboardRoutes = [
     component: Home
   },
   {
-    path: "/dashboard",
-    sidebarName: "Dashboard",
-    navbarName: "Staked",
-    icon: Dashboard,
-    component: DashboardPage
-  },
-  {
     path: "/wrap_allowance",
     sidebarName: "Wrap / Alloance",
     navbarName: "Wrap / Alloance",
@@ -44,7 +37,7 @@ const dashboardRoutes = [
     sidebarName: "Orders",
     navbarName: "Orders",
     icon: "content_paste",
-    component: WrapAllowance
+    component: Orders
   },
   {
     path: "/typography",
@@ -83,7 +76,7 @@ const dashboardRoutes = [
     icon: Unarchive,
     component: UpgradeToPro
   },
-  { redirect: true, path: "/", to: "/dashboard", navbarName: "Redirect" }
+  { redirect: true, path: "/", to: "/home", navbarName: "Redirect" }
 ];
 
 export default dashboardRoutes;
