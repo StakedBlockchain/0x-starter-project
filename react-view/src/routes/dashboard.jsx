@@ -27,8 +27,8 @@ const dashboardRoutes = [
   },
   {
     path: "/wrap_allowance",
-    sidebarName: "Wrap / Alloance",
-    navbarName: "Wrap / Alloance",
+    sidebarName: "Wrap / Allowance",
+    navbarName: "Wrap / Allowance",
     icon: Person,
     component: WrapAllowance
   },
