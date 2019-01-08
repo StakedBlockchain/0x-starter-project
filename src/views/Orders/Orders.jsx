@@ -23,7 +23,7 @@ import CardFooter from "components/Card/CardFooter.jsx";
 
 import axios from 'axios';
 import moment from 'moment';
-import web3 from "../../web3";
+import web3 from "../../libs/web3";
 import {
   assetDataUtils,
   BigNumber,
@@ -157,7 +157,7 @@ class Orders extends Component {
     const takerAmount = this.state.takerAmount;
     const expiration = "1550161320";
 
-    const providerEngine = metamaskProvider(web3.currentProvider);
+    const providerEngine = metamaskProvider(window.web3.currentProvider);
     const makerTokenAddress = contractAddresses[makerAssetType];
     const takerTokenAddress = contractAddresses[takerAssetType];
     const exchangeAddress = contractAddresses.exchange;
@@ -226,7 +226,7 @@ class Orders extends Component {
       signedOrder.takerAssetAmount = new BigNumber(signedOrder.takerAssetAmount);
       signedOrder.expirationTimeSeconds = new BigNumber(signedOrder.expirationTimeSeconds);
 
-      const providerEngine = metamaskProvider(web3.currentProvider);
+      const providerEngine = metamaskProvider(window.web3.currentProvider);
       const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
       await contractWrappers.exchange.validateFillOrderThrowIfInvalidAsync(signedOrder, takerAssetAmount, taker);
 

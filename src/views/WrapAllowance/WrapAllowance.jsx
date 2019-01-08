@@ -12,7 +12,7 @@ import GridItem from "components/Grid/GridItem.jsx";
 import Switch from '@material-ui/core/Switch';
 import Table from "components/Table/Table.jsx";
 
-import web3 from "../../web3";
+import web3 from "../../libs/web3";
 import { getErc20BalanceAsync } from "./erc20GetBalanceAsync";
 import {
   BigNumber,
@@ -69,7 +69,7 @@ class WrapAllowance extends Component {
   };
 
   async componentDidMount() {
-    const providerEngine = metamaskProvider(web3.currentProvider);
+    const providerEngine = metamaskProvider(window.web3.currentProvider);
     const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
     const etherTokenAddress = contractAddresses['etherToken'];
     const zrxTokenAddress = contractAddresses['zrxToken'];
@@ -108,7 +108,7 @@ class WrapAllowance extends Component {
     const id = event.target.id;
     const checked = event.target.checked;
 
-    const providerEngine = metamaskProvider(web3.currentProvider);
+    const providerEngine = metamaskProvider(window.web3.currentProvider);
     const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
     const tokenAddress = contractAddresses[event.target.value];
     const approvalTxHash = await contractWrappers.erc20Token.setUnlimitedProxyAllowanceAsync(
@@ -122,7 +122,7 @@ class WrapAllowance extends Component {
   // Wrap Unwrap
   depositClick = async() => {
     const etherTokenAddress = contractAddresses['etherToken'];
-    const providerEngine = metamaskProvider(web3.currentProvider);
+    const providerEngine = metamaskProvider(window.web3.currentProvider);
     const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
     const depositAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(this.state.depositAmount), DECIMALS);
     const depositTxHash = await contractWrappers.etherToken.depositAsync(
@@ -136,7 +136,7 @@ class WrapAllowance extends Component {
 
   withdrawClick = async() => {
     const etherTokenAddress = contractAddresses['etherToken'];
-    const providerEngine = metamaskProvider(web3.currentProvider);
+    const providerEngine = metamaskProvider(window.web3.currentProvider);
     const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
     const withdrawAmount = Web3Wrapper.toBaseUnitAmount(new BigNumber(this.state.withdrawAmount), DECIMALS);
     const withdrawTxHash = await contractWrappers.etherToken.withdrawAsync(
