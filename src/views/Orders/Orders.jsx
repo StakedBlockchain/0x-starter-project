@@ -80,6 +80,12 @@ const styles = theme => ({
     textDecoration: "none"
   },
 });
+const activeOpacity = 1.0;
+const inactiveOpacity = 0.6;
+const assetType = {
+  'WETH': 'etherToken',
+  'ZRX': 'zrxToken'
+};
 
 class Orders extends Component {
   state = {
@@ -98,7 +104,10 @@ class Orders extends Component {
     fillTaker: '',
 
     selectedOrderIndex: null,
-    orderList: []
+    orderList: [],
+
+    generateOrderStyle: { opacity: activeOpacity },
+    fillOrderStyle: { opacity: inactiveOpacity }
   };
 
   async componentDidMount() {
@@ -121,7 +130,13 @@ class Orders extends Component {
   changeAssetType = async(e) => {
     const stateName = e.target.name;
     const stateValue = e.target.value;
-    await this.setState({[stateName]: stateValue});
+    await this.setState({ [stateName]: stateValue });
+
+    // @memo: あとで仕組み考える
+    const otherStateName = stateName == 'makerAssetType' ? 'takerAssetType' : 'makerAssetType';
+    const otherStateValue = stateValue == 'etherToken' ? 'zrxToken' : 'etherToken';
+    await this.setState({ [otherStateName]: otherStateValue });
+
     await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   }
 
@@ -131,14 +146,14 @@ class Orders extends Component {
     const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
     const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
 
+    axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
     axios
       .get(RELAYER_HOST + '/v2/orders', {
         params: {
           'makerAssetData': makerAssetData,
           'takerAssetData': takerAssetData
         }
-      })
-      .then(async (res) => {
+      }).then(async (res) => {
         const dataList = res.data.records;
         await this.setState({ orderList: dataList });
       }).catch((err) => {
@@ -155,7 +170,8 @@ class Orders extends Component {
     const takerAssetType = this.state.takerAssetType;
     const makerAmount = this.state.makerAmount;
     const takerAmount = this.state.takerAmount;
-    const expiration = "1550161320";
+    // 一旦、2週間で固定する
+    const expiration = String(moment().add(2, 'weeks').unix());
 
     const providerEngine = metamaskProvider(window.web3.currentProvider);
     const makerTokenAddress = contractAddresses[makerAssetType];
@@ -214,6 +230,15 @@ class Orders extends Component {
     await this.setState({ fillTakerAmount: await web3.utils.fromWei(order.takerAssetAmount, 'ether') });
     await this.setState({ fillExpiration: moment(new Date(order.expirationTimeSeconds * 1000)).format('YYYY-MM-DD HH:mm') });
     await this.setState({ fillTaker: order.fillTaker });
+
+    // change box opacity
+    await this.setState({ generateOrderStyle: { opacity: inactiveOpacity } });
+    await this.setState({ fillOrderStyle: { opacity: activeOpacity } });
+  }
+
+  generateOrderClick = async() => {
+    await this.setState({ fillOrderStyle: { opacity: inactiveOpacity } });
+    await this.setState({ generateOrderStyle: { opacity: activeOpacity } });
   }
 
   executeOrderClick = async() => {
@@ -246,7 +271,7 @@ class Orders extends Component {
     return (
       <div>
         <GridContainer>
-        <GridItem xs={12} sm={12} md={12}>
+          <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="primary">
                 <h4 className={classes.cardTitleWhite}>Wallet Information</h4>
@@ -283,97 +308,105 @@ class Orders extends Component {
               </CardBody>
             </Card>
           </GridItem>
-          <GridItem xs={12} sm={12} md={4}>
-            <Card>
-              <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Generate Order</h4>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <FormControl className={classes.formControl}>
-                      <InputLabel htmlFor="maker-asset-type">MakerAssetType</InputLabel>
-                      <Select
-                        labelText="Maker Asset Type"
-                        value={this.state.makerAssetType}
-                        onChange={this.changeAssetType}
-                        inputProps={{
-                          id: 'maker-asset-type',
-                          name: 'makerAssetType'
+          <GridItem xs={12} sm={12} md={4} onClick={this.generateOrderClick}>
+            <div style={this.state.generateOrderStyle}>
+              <Card>
+                <CardHeader color="primary">
+                  <h4 className={classes.cardTitleWhite}>Generate Order</h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <FormControl className={classes.formControl}>
+                        <InputLabel htmlFor="maker-asset-type">MakerAssetType</InputLabel>
+                        <Select
+                          labelText="Maker Asset Type"
+                          value={this.state.makerAssetType}
+                          onChange={this.changeAssetType}
+                          inputProps={{
+                            id: 'maker-asset-type',
+                            name: 'makerAssetType'
+                          }}
+                        >
+                          {Object.keys(assetType).map((value, index) => {
+                            return (
+                              <MenuItem value={assetType[value]}>{value}</MenuItem>
+                            )
+                          })}
+                        </Select>
+                      </FormControl>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <FormControl className={classes.formControl}>
+                        <InputLabel htmlFor="taker-asset-type">TakerAssetType</InputLabel>
+                        <Select
+                          labelText="Taker Asset Type"
+                          value={this.state.takerAssetType}
+                          onChange={this.changeAssetType}
+                          inputProps={{
+                            id: 'taker-asset-type',
+                            name: 'takerAssetType'
+                          }}
+                        >
+                          {Object.keys(assetType).map((value, index) => {
+                            return (
+                              <MenuItem value={assetType[value]}>{value}</MenuItem>
+                            )
+                          })}
+                        </Select>
+                      </FormControl>
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Maker Amount"
+                        id="maker-amount"
+                        value={this.state.makerAmount}
+                        onChange={event => this.setState({ makerAmount: event.target.value }) }
+                        formControlProps={{
+                          fullWidth: true
                         }}
-                      >
-                        <MenuItem value={'etherToken'}>WETH</MenuItem>
-                        <MenuItem value={'zrxToken'}>ZRX</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <FormControl className={classes.formControl}>
-                      <InputLabel htmlFor="taker-asset-type">TakerAssetType</InputLabel>
-                      <Select
-                        labelText="Taker Asset Type"
-                        value={this.state.takerAssetType}
-                        onChange={this.changeAssetType}
-                        inputProps={{
-                          id: 'taker-asset-type',
-                          name: 'takerAssetType'
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Taker Amount"
+                        id="taker-amount"
+                        value={this.state.takerAmount}
+                        onChange={event => this.setState({ takerAmount: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
                         }}
-                      >
-                        <MenuItem value={'etherToken'}>WETH</MenuItem>
-                        <MenuItem value={'zrxToken'}>ZRX</MenuItem>
-                      </Select>
-                    </FormControl>
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Maker Amount"
-                      id="maker-amount"
-                      value={this.state.makerAmount}
-                      onChange={event => this.setState({ makerAmount: event.target.value }) }
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Taker Amount"
-                      id="taker-amount"
-                      value={this.state.takerAmount}
-                      onChange={event => this.setState({ takerAmount: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Expiration"
-                      id="expiration"
-                      value={this.state.expiration}
-                      onChange={event => this.setState({ expiration: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Taker"
-                      id="taker"
-                      value={this.state.taker}
-                      onChange={event => this.setState({ taker: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-              <CardFooter>
-                <Button onClick={ this.submitOrderClick } color="primary">Submit Order</Button>
-              </CardFooter>
-            </Card>
+                      />
+                    </GridItem>
+                    {/* <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Expiration"
+                        id="expiration"
+                        value={this.state.expiration}
+                        onChange={event => this.setState({ expiration: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                      />
+                    </GridItem> */}
+                    {/* <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Taker"
+                        id="taker"
+                        value={this.state.taker}
+                        onChange={event => this.setState({ taker: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                      />
+                    </GridItem> */}
+                  </GridContainer>
+                </CardBody>
+                <CardFooter>
+                  <Button onClick={ this.submitOrderClick } color="primary">Submit Order</Button>
+                </CardFooter>
+              </Card>
+            </div>
           </GridItem>
           <GridItem xs={12} sm={12} md={4}>
             <Card className={classes.tableResponsive}>
@@ -415,72 +448,74 @@ class Orders extends Component {
             </Card>
           </GridItem>
           <GridItem xs={12} sm={12} md={4}>
-            <Card>
-              <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Fill Order</h4>
-              </CardHeader>
-              <CardBody>
-                <GridContainer>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Maker Amount"
-                      id="fill-maker-amount"
-                      value={this.state.fillMakerAmount}
-                      onChange={event => this.setState({ fillMakerAmount: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Taker Amount"
-                      id="fill-taker-amount"
-                      value={this.state.fillTakerAmount}
-                      onChange={event => this.setState({ fillTakerAmount: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Expiration"
-                      id="fillExpiration"
-                      value={this.state.fillExpiration}
-                      onChange={event => this.setState({ fillExpiration: event.target.value })}
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true
-                      }}
-                    />
-                  </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="Taker"
-                      id="fillTaker"
-                      value={this.state.fillTaker}
-                      onChange={event => this.setState({ fillTaker: event.target.value })}
-                      formControlProps={{
-                        readOnly: true,
-                        fullWidth: true
-                      }}
-                    />
-                  </GridItem>
-                </GridContainer>
-              </CardBody>
-              <CardFooter>
-                <Button onClick={this.executeOrderClick} color="primary">Execute Order</Button>
-              </CardFooter>
-            </Card>
+            <div style={this.state.fillOrderStyle}>
+              <Card>
+                <CardHeader color="primary">
+                  <h4 className={classes.cardTitleWhite}>Fill Order</h4>
+                </CardHeader>
+                <CardBody>
+                  <GridContainer>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Maker Amount"
+                        id="fill-maker-amount"
+                        value={this.state.fillMakerAmount}
+                        onChange={event => this.setState({ fillMakerAmount: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          readOnly: true
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Taker Amount"
+                        id="fill-taker-amount"
+                        value={this.state.fillTakerAmount}
+                        onChange={event => this.setState({ fillTakerAmount: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          readOnly: true
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Expiration"
+                        id="fillExpiration"
+                        value={this.state.fillExpiration}
+                        onChange={event => this.setState({ fillExpiration: event.target.value })}
+                        formControlProps={{
+                          fullWidth: true
+                        }}
+                        inputProps={{
+                          readOnly: true
+                        }}
+                      />
+                    </GridItem>
+                    <GridItem xs={12} sm={12} md={12}>
+                      <CustomInput
+                        labelText="Taker"
+                        id="fillTaker"
+                        value={this.state.fillTaker}
+                        onChange={event => this.setState({ fillTaker: event.target.value })}
+                        formControlProps={{
+                          readOnly: true,
+                          fullWidth: true
+                        }}
+                      />
+                    </GridItem>
+                  </GridContainer>
+                </CardBody>
+                <CardFooter>
+                  <Button onClick={this.executeOrderClick} color="primary">Execute Order</Button>
+                </CardFooter>
+              </Card>
+            </div>
           </GridItem>
         </GridContainer>
       </div>
