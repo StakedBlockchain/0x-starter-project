@@ -12,5 +12,6 @@ export const KOVAN_NETWORK_ID = 42;
 export const ROPSTEN_NETWORK_ID = 3;
 export const RINKEBY_NETWORK_ID = 4;
 
-export const RELAYER_HOST = 'http://localhost:3030';
-// export const RELAYER_HOST = 'https://kovan.radarrelay.com';
+export const RELAYER_HOST = 'http://localhost:3030/v2';
+// export const RELAYER_HOST = 'https://kovan.radarrelay.com/v2';
+// export const RELAYER_HOST = 'https://api.amadeusrelay.org/api/v0';
