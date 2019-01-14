@@ -19,7 +19,7 @@ const dashboardRoutes = [
     path: "/wrap_allowance",
     sidebarName: "Wrap / Allowance",
     navbarName: "Wrap / Allowance",
-    icon: Person,
+    icon: "compare_arrows",
     component: WrapAllowance
   },
   {
