@@ -146,9 +146,11 @@ class Orders extends Component {
     const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
     const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
 
-    axios.defaults.headers.post["Content-Type"] = "application/x-www-form-urlencoded";
     axios
-      .get(RELAYER_HOST + '/v2/orders', {
+      .get(RELAYER_HOST + '/orders', {
+        headers: {
+          'Access-Control-Allow-Origin': '*'
+        },
         params: {
           'makerAssetData': makerAssetData,
           'takerAssetData': takerAssetData
@@ -207,8 +209,14 @@ class Orders extends Component {
     const signedOrder = { ...order, signature };
 
     axios
-      .post(RELAYER_HOST + '/v2/order', signedOrder)
-      .then(async (res) => {
+      .post(
+        RELAYER_HOST + '/order',
+        signedOrder, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Content-Type': 'application/json'
+          }
+      }).then(async (res) => {
         console.log(res);
 
         await this.reloadOrder(makerAssetType, takerAssetType);
