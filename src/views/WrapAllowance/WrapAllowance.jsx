@@ -165,7 +165,7 @@ class WrapAllowance extends Component {
             fullWidth: true
           }}
         />,
-        <Button onClick={this.depositClick} color="primary">DEPOSIT</Button>
+        <Button onClick={this.depositClick} color="primary">WETHにする</Button>
       ],
       [
         "WETH",
@@ -180,7 +180,7 @@ class WrapAllowance extends Component {
             fullWidth: true
           }}
         />,
-        <Button onClick={this.withdrawClick} color="primary">WITHDRAW</Button>
+        <Button onClick={this.withdrawClick} color="primary">ETHにする</Button>
       ]
     ];
     const allowanceTableData = [
@@ -229,7 +229,7 @@ class WrapAllowance extends Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Allowances</h4>
+                <h4 className={classes.cardTitleWhite}>トークン送金許可</h4>
               </CardHeader>
               <CardBody>
                 <Table

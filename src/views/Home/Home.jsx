@@ -49,14 +49,33 @@ function PaperSheet(props) {
             <Card className={classes.card}>
               <CardHeader>
                 <Typography>
-                  <h1>Digital Assets For Everyone. 〜分散型取引所をすべての人に〜</h1>
+                  <h1>デジタル・アセットの分散型取引をすべての人に</h1>
                   <h4>【テストネット版】ブロックチェーンを応用し、秘密鍵を自分で管理しながら、集権的な第三者を通さずにウォレット間で取引を実現します。</h4>
                 </Typography>
               </CardHeader>
             </Card>
           </GridItem>
         </GridContainer>
-      
+
+        <GridContainer xs={12}>
+          <GridItem xs={12}　sm={12}>
+            <Card className={classes.card}>
+              <CardHeader>
+                <Typography>
+                  <ol>使用方法
+                    <li> MetamaskをインストールしKovanテストネットに接続してください。</li>
+                    <li> KovanテストネットでETHを入手する必要があります。入手するには<a href="https://gitter.im/kovan-testnet/faucet">こちら</a>でETHアドレスを送信すると自動的に振り込まれます。</li>
+                    <li> 画面左のWrap/Allowanceでは、ETH（Ethereumの通貨）をWrapped ETHに変換する作業を行います。ETHはEthereum上で発行されたERC20トークンと直接交換することができません。ETHをERC20トークン仕様にするためにWrapという作業を通してWETHを発行します。また、AllowanceではETHとWETHを交換する許可を設定します。</li>
+                    <li> Ordersの画面では、オーダーの作成と交換を行います。交換したい通貨と欲しい通貨を選択しオーダーを提出します。</li>
+                    <li> オーダーは画面中央で蓄積され、そのオーダーをタップしFillボタンを押すことによって交換を行うことができます。</li>
+                  </ol>
+                </Typography>
+              </CardHeader>
+            </Card>
+          </GridItem>
+        </GridContainer>
+        
+
         <GridContainer xs={12} sm={12}>
           <GridItem xs={12}>
             <Card className={classes.card}>
@@ -84,7 +103,7 @@ function PaperSheet(props) {
                         </CardContent>
                         </CardActionArea>
                         <CardActions>
-                         <Button size="small" color="primary">
+                         <Button size="small" color="primary" target="_blank" href="https://alis.to/Watanabesota/articles/KJNObpxev6pd">
                            もっと学ぶ
                          </Button>
                         </CardActions>
@@ -111,9 +130,9 @@ function PaperSheet(props) {
                         </CardContent>
                         </CardActionArea>
                         <CardActions>
-                         <Button size="small" color="primary">
-                           もっと学ぶ
-                         </Button>
+                          <Button size="small" color="primary"　target="_blank" href="https://alis.to/Watanabesota/articles/KJNObpxev6pd">
+                            もっと学ぶ
+                          </Button>
                         </CardActions>
                     </Card>
                     </GridContainer>
@@ -138,7 +157,7 @@ function PaperSheet(props) {
                         </CardContent>
                         </CardActionArea>
                         <CardActions>
-                         <Button size="small" color="primary">
+                         <Button size="small" color="primary" target="_blank" href="https://alis.to/Watanabesota/articles/KJNObpxev6pd">
                            もっと学ぶ
                          </Button>
                         </CardActions>
@@ -156,15 +175,15 @@ function PaperSheet(props) {
                         />
                         <CardContent>
                           <Typography gutterBottom variant="h5" component="h2">
-                            早い、安い
+                            フリクションの少なさ
                           </Typography>
                           <Typography component="p">
-                          既存の取引所に比べ分散型取引所の手数料は安く、流動性に応じて早く決済を行うことができます。
+                          流動性がある常態下では既存の取引所に比べ分散型取引所の手数料は安く、速く決済を行うことができます。
                           </Typography>
                         </CardContent>
                         </CardActionArea>
                         <CardActions>
-                         <Button size="small" color="primary">
+                         <Button size="small" color="primary" target="_blank" href="https://alis.to/Watanabesota/articles/KJNObpxev6pd">
                            もっと学ぶ
                          </Button>
                         </CardActions>
@@ -177,19 +196,7 @@ function PaperSheet(props) {
             </Card>
           </GridItem>
         </GridContainer>
-
-        <GridContainer xs={12}>
-          <GridItem xs={12}　sm={12}>
-            <Card className={classes.card}>
-              <CardHeader>
-                <Typography>
-                  <h2>使用方法</h2>
-                </Typography>
-              </CardHeader>
-            </Card>
-          </GridItem>
         </GridContainer>
-      </GridContainer>
     </div>
   );
 }

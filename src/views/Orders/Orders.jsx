@@ -282,7 +282,7 @@ class Orders extends Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Wallet Information</h4>
+                <h4 className={classes.cardTitleWhite}>ウォレットの情報</h4>
               </CardHeader>
               <CardBody>
                 <GridContainer>
@@ -320,13 +320,13 @@ class Orders extends Component {
             <div style={this.state.generateOrderStyle}>
               <Card>
                 <CardHeader color="primary">
-                  <h4 className={classes.cardTitleWhite}>Generate Order</h4>
+                  <h4 className={classes.cardTitleWhite}>オーダーを作成する</h4>
                 </CardHeader>
                 <CardBody>
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={12}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="maker-asset-type">MakerAssetType</InputLabel>
+                        <InputLabel htmlFor="maker-asset-type">差出すAsset</InputLabel>
                         <Select
                           labelText="Maker Asset Type"
                           value={this.state.makerAssetType}
@@ -346,7 +346,7 @@ class Orders extends Component {
                     </GridItem>
                     <GridItem xs={12} sm={12} md={12}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="taker-asset-type">TakerAssetType</InputLabel>
+                        <InputLabel htmlFor="taker-asset-type">受け取るAsset</InputLabel>
                         <Select
                           labelText="Taker Asset Type"
                           value={this.state.takerAssetType}
@@ -411,7 +411,7 @@ class Orders extends Component {
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={ this.submitOrderClick } color="primary">Submit Order</Button>
+                  <Button onClick={ this.submitOrderClick } color="primary">オーダーを作成する</Button>
                 </CardFooter>
               </Card>
             </div>
@@ -419,7 +419,7 @@ class Orders extends Component {
           <GridItem xs={12} sm={12} md={4}>
             <Card className={classes.tableResponsive}>
               <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>Orders</h4>
+                <h4 className={classes.cardTitleWhite}>オーダー</h4>
               </CardHeader>
               <CardBody>
                 <Table className={classes.table}>
@@ -459,7 +459,7 @@ class Orders extends Component {
             <div style={this.state.fillOrderStyle}>
               <Card>
                 <CardHeader color="primary">
-                  <h4 className={classes.cardTitleWhite}>Fill Order</h4>
+                  <h4 className={classes.cardTitleWhite}>オーダーを実行する</h4>
                 </CardHeader>
                 <CardBody>
                   <GridContainer>
@@ -520,7 +520,7 @@ class Orders extends Component {
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={this.executeOrderClick} color="primary">Execute Order</Button>
+                  <Button onClick={this.executeOrderClick} color="primary">実行する</Button>
                 </CardFooter>
               </Card>
             </div>

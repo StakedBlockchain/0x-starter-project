@@ -72,7 +72,7 @@ class App extends React.Component {
       <div className={classes.wrapper}>
         <Sidebar
           routes={dashboardRoutes}
-          logoText={"Staked Relayer"}
+          logoText={"Token Exchange"}
           logo={logo}
           image={image}
           handleDrawerToggle={this.handleDrawerToggle}
