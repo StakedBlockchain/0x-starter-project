@@ -47,12 +47,12 @@ function PaperSheet(props) {
         <GridContainer xs={12}>
           <GridItem xs={12} sm={12}>
             <Card className={classes.card}>
-              <CardBody>
+              <CardHeader>
                 <Typography>
                   <h1>デジタル・アセットの分散型取引をすべての人に</h1>
                   <h4>【テストネット版】ブロックチェーンを応用し、秘密鍵を自分で管理しながら、集権的な第三者を通さずにウォレット間で取引を実現します。</h4>
                 </Typography>
-              </CardBody>
+              </CardHeader>
             </Card>
           </GridItem>
         </GridContainer>
