@@ -318,7 +318,7 @@ class Orders extends Component {
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={12}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="maker-asset-type">交換するAsset</InputLabel>
+                        <InputLabel htmlFor="maker-asset-type">差出すAsset</InputLabel>
                         <Select
                           labelText="Maker Asset Type"
                           value={this.state.makerAssetType}
@@ -403,7 +403,7 @@ class Orders extends Component {
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={ this.submitOrderClick } color="primary">オーダーを提出する</Button>
+                  <Button onClick={ this.submitOrderClick } color="primary">オーダーを作成する</Button>
                 </CardFooter>
               </Card>
             </div>

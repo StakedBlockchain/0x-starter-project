@@ -1,5 +1,4 @@
 import React from "react";
-import { Link } from 'react-router-dom'
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -63,12 +62,13 @@ function PaperSheet(props) {
             <Card className={classes.card}>
               <CardHeader>
                 <Typography>
-                  <h2>使用方法</h2>
-                  <h4><b>1.</b> MetamaskをインストールしKovanテストネットに接続してください。</h4>
-                  <h4><b>2.</b> KovanテストネットでETHを入手する必要があります。入手するには<a href="https://gitter.im/kovan-testnet/faucet">こちら</a>でETHアドレスを送信すると自動的に振り込まれます。</h4>
-                  <h4><b>3.</b> 画面左のWrap/Allowanceでは、ETH（Ethereumの通貨）をWrapped ETHに変換する作業を行います。ETHはEthereum上で発行されたERC20トークンと直接交換することができません。ETHをERC20トークン仕様にするためにWrapという作業を通してWETHを発行します。また、AllowanceではETHとWETHを交換する許可を設定します。</h4>
-                  <h4><b>4.</b> Ordersの画面では、オーダーの作成と交換を行います。交換したい通貨と欲しい通貨を選択しオーダーを提出します。</h4>
-                  <h4><b>5.</b> オーダーは画面中央で蓄積され、そのオーダーをタップしFillボタンを押すことによって交換を行うことができます。</h4>
+                  <ol>使用方法
+                    <li> MetamaskをインストールしKovanテストネットに接続してください。</li>
+                    <li> KovanテストネットでETHを入手する必要があります。入手するには<a href="https://gitter.im/kovan-testnet/faucet">こちら</a>でETHアドレスを送信すると自動的に振り込まれます。</li>
+                    <li> 画面左のWrap/Allowanceでは、ETH（Ethereumの通貨）をWrapped ETHに変換する作業を行います。ETHはEthereum上で発行されたERC20トークンと直接交換することができません。ETHをERC20トークン仕様にするためにWrapという作業を通してWETHを発行します。また、AllowanceではETHとWETHを交換する許可を設定します。</li>
+                    <li> Ordersの画面では、オーダーの作成と交換を行います。交換したい通貨と欲しい通貨を選択しオーダーを提出します。</li>
+                    <li> オーダーは画面中央で蓄積され、そのオーダーをタップしFillボタンを押すことによって交換を行うことができます。</li>
+                  </ol>
                 </Typography>
               </CardHeader>
             </Card>

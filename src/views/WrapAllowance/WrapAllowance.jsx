@@ -229,7 +229,7 @@ class WrapAllowance extends Component {
           <GridItem xs={12} sm={12} md={12}>
             <Card>
               <CardHeader color="primary">
-                <h4 className={classes.cardTitleWhite}>WETHとETHを使用する許可をする</h4>
+                <h4 className={classes.cardTitleWhite}>トークン送金許可</h4>
               </CardHeader>
               <CardBody>
                 <Table
