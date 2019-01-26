@@ -24,6 +24,8 @@ import CardFooter from "components/Card/CardFooter.jsx";
 import axios from 'axios';
 import moment from 'moment';
 import web3 from "../../libs/web3";
+import web3Utils from "../../libs/web3Utils";
+import { getErc20BalanceAsync } from "../../libs/erc20GetBalanceAsync";
 import {
   assetDataUtils,
   BigNumber,
@@ -90,7 +92,8 @@ const assetType = {
 class Orders extends Component {
   state = {
     address: '',
-    balance: 0,
+    wetherBalance: 0,
+    zrxBalance: 0,
     makerAssetType: 'etherToken',
     takerAssetType: 'zrxToken',
     makerAmount: 0,
@@ -107,20 +110,35 @@ class Orders extends Component {
     orderList: [],
 
     generateOrderStyle: { opacity: activeOpacity },
-    fillOrderStyle: { opacity: inactiveOpacity }
-  };
+    fillOrderStyle: { opacity: inactiveOpacity },
+
+    web3Enable: false
+  }
+
+  async componentWillMount() {
+    if (await web3Utils.isKovanNetwork(web3)) {
+      const addresses = await web3.eth.getAccounts();
+      if (addresses.length > 0) {
+        const address = addresses[0].toLowerCase()
+        await this.setState({ address: address });
+
+        const etherTokenAddress = contractAddresses['etherToken'];
+        const zrxTokenAddress = contractAddresses['zrxToken'];
+        const wetherBalance = await getErc20BalanceAsync(address, etherTokenAddress);
+        const zrxBalance = await getErc20BalanceAsync(address, zrxTokenAddress);
+
+        await this.setState({ wetherBalance: wetherBalance });
+        await this.setState({ zrxBalance: zrxBalance });
+
+        metamaskProvider(web3.currentProvider);
+        await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
+
+        await this.setState({ web3Enable: true });
+      }
+    }
+  }
 
   async componentDidMount() {
-    const addresses = await web3.eth.getAccounts();
-    await this.setState({ address: addresses[0].toLowerCase() });
-    await this.setState({ fillAddress: addresses[0].toLowerCase() });
-
-    const balance = await web3.eth.getBalance(addresses[0]);
-    await this.setState({ balance: await web3.utils.fromWei(balance, 'ether') });
-    await this.setState({ fillBalance: await web3.utils.fromWei(balance, 'ether') });
-
-    metamaskProvider(web3.currentProvider);
-    await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   }
 
   handleChangeIndex = index => {
@@ -133,35 +151,37 @@ class Orders extends Component {
     await this.setState({ [stateName]: stateValue });
 
     // @memo: あとで仕組み考える
-    const otherStateName = stateName == 'makerAssetType' ? 'takerAssetType' : 'makerAssetType';
-    const otherStateValue = stateValue == 'etherToken' ? 'zrxToken' : 'etherToken';
+    const otherStateName = stateName === 'makerAssetType' ? 'takerAssetType' : 'makerAssetType';
+    const otherStateValue = stateValue === 'etherToken' ? 'zrxToken' : 'etherToken';
     await this.setState({ [otherStateName]: otherStateValue });
 
     await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   }
 
   reloadOrder = async(makerAssetType, takerAssetType) => {
-    const makerTokenAddress = contractAddresses[makerAssetType];
-    const takerTokenAddress = contractAddresses[takerAssetType];
-    const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
-    const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
+    if (web3Utils.isKovanNetwork(web3)) {
+      const makerTokenAddress = contractAddresses[makerAssetType];
+      const takerTokenAddress = contractAddresses[takerAssetType];
+      const makerAssetData = assetDataUtils.encodeERC20AssetData(makerTokenAddress);
+      const takerAssetData = assetDataUtils.encodeERC20AssetData(takerTokenAddress);
 
-    axios
-      .get(RELAYER_HOST + '/orders', {
-        headers: {
-          'Access-Control-Allow-Origin': '*'
-        },
-        params: {
-          'makerAssetData': makerAssetData,
-          'takerAssetData': takerAssetData
-        }
-      }).then(async (res) => {
-        const dataList = res.data.records;
-        await this.setState({ orderList: dataList });
-      }).catch((err) => {
-        console.error(err);
-        alert('ERROR\n' + err.message);
-      });
+      axios
+        .get(RELAYER_HOST + '/orders', {
+          headers: {
+            'Access-Control-Allow-Origin': '*'
+          },
+          params: {
+            'makerAssetData': makerAssetData,
+            'takerAssetData': takerAssetData
+          }
+        }).then(async (res) => {
+          const dataList = res.data.records;
+          await this.setState({ orderList: dataList });
+        }).catch((err) => {
+          console.error(err);
+          alert('ERROR\n' + err.message);
+        });
+    }
   }
 
   submitOrderClick = async() => {
@@ -301,14 +321,27 @@ class Orders extends Component {
                   </GridItem>
                   <GridItem xs={12} sm={12} md={12}>
                     <CustomInput
-                      labelText="YOUR BALANCE"
-                      id="your-balance"
+                      labelText="YOUR WETH BALANCE"
+                      id="your-weth-balance"
                       formControlProps={{
                         fullWidth: true
                       }}
                       inputProps={{
                         readOnly: true,
-                        value: this.state.balance
+                        value: this.state.wetherBalance
+                      }}
+                    />
+                  </GridItem>
+                  <GridItem xs={12} sm={12} md={12}>
+                    <CustomInput
+                      labelText="YOUR ZRX BALANCE"
+                      id="your-zrx-balance"
+                      formControlProps={{
+                        fullWidth: true
+                      }}
+                      inputProps={{
+                        readOnly: true,
+                        value: this.state.zrxBalance
                       }}
                     />
                   </GridItem>
@@ -411,7 +444,7 @@ class Orders extends Component {
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={ this.submitOrderClick } color="primary">オーダーを作成する</Button>
+                  <Button onClick={ this.submitOrderClick } color="primary" disabled={ !this.state.web3Enable }>オーダーを作成する</Button>
                 </CardFooter>
               </Card>
             </div>
@@ -520,7 +553,7 @@ class Orders extends Component {
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={this.executeOrderClick} color="primary">実行する</Button>
+                  <Button onClick={this.executeOrderClick} color="primary" disabled={ !this.state.web3Enable }>実行する</Button>
                 </CardFooter>
               </Card>
             </div>

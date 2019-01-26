@@ -2,7 +2,7 @@ import erc20GetBalanceAbi from "./erc20GetBalanceAbi";
 import {
   BigNumber
 } from "0x.js";
-import web3 from "../../libs/web3";
+import web3 from "./web3";
 
 export async function getErc20BalanceAsync(walletAddress, tokenAddress) {
   const contract = new web3.eth.Contract(erc20GetBalanceAbi, tokenAddress);

@@ -69,7 +69,7 @@ const sidebarStyle = theme => ({
     fontSize: "18px",
     textAlign: "left",
     fontWeight: "400",
-    lineHeight: "30px",
+    lineHeight: "40px",
     textDecoration: "none",
     backgroundColor: "transparent",
     "&,&:hover": {
