@@ -5,10 +5,15 @@ import { Switch, Route, Redirect } from "react-router-dom";
 // creates a beautiful scrollbar
 import PerfectScrollbar from "perfect-scrollbar";
 import "perfect-scrollbar/css/perfect-scrollbar.css";
+// blockui
+import BlockUi from "react-block-ui";
+import { Loader } from 'react-loaders';
+import "react-block-ui/style.css";
+import "loaders.css/loaders.min.css";
 // @material-ui/core components
 import withStyles from "@material-ui/core/styles/withStyles";
 // core components
-import Header from "components/Header/Header.jsx";
+// import Header from "components/Header/Header.jsx";
 import Footer from "components/Footer/Footer.jsx";
 import Sidebar from "components/Sidebar/Sidebar.jsx";
 
@@ -17,8 +22,10 @@ import dashboardRoutes from "routes/dashboard.jsx";
 import dashboardStyle from "assets/jss/material-dashboard-react/layouts/dashboardStyle.jsx";
 
 import image from "assets/img/sidebar-5.png";
-// TODO: ロゴ変える
-import logo from "assets/img/reactlogo.png";
+import logo from "assets/img/logo.png";
+
+import web3 from "../../libs/web3";
+import web3Utils from "../../libs/web3Utils";
 
 const switchRoutes = (
   <Switch>
@@ -34,7 +41,8 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      mobileOpen: false
+      mobileOpen: false,
+      blocking: false
     };
     this.resizeFunction = this.resizeFunction.bind(this);
   }
@@ -47,6 +55,12 @@ class App extends React.Component {
   resizeFunction() {
     if (window.innerWidth >= 960) {
       this.setState({ mobileOpen: false });
+    }
+  }
+  async componentWillMount() {
+    if (!(await web3Utils.isKovanNetwork(web3))) {
+      console.log(22222222222);
+      this.setState({ blocking: true });
     }
   }
   componentDidMount() {
@@ -69,34 +83,39 @@ class App extends React.Component {
   render() {
     const { classes, ...rest } = this.props;
     return (
-      <div className={classes.wrapper}>
-        <Sidebar
-          routes={dashboardRoutes}
-          logoText={"Token Exchange"}
-          logo={logo}
-          image={image}
-          handleDrawerToggle={this.handleDrawerToggle}
-          open={this.state.mobileOpen}
-          color="blue"
-          {...rest}
-        />
-        <div className={classes.mainPanel} ref="mainPanel">
-          {/* <Header
+      <BlockUi tag="div" blocking={ this.state.blocking }
+        // loader={ <Loader active type='ball-scale-ripple-multiple' /> }
+        color="#02a17c"
+        message="MetaMask の設定を Kovan ネットワークに変更してください">_
+        <div className={classes.wrapper}>
+          <Sidebar
             routes={dashboardRoutes}
+            logoText={"Token Exchange"}
+            logo={logo}
+            image={image}
             handleDrawerToggle={this.handleDrawerToggle}
+            open={this.state.mobileOpen}
+            color="blue"
             {...rest}
-          /> */}
-          {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
-          {this.getRoute() ? (
-            <div className={classes.content}>
-              <div className={classes.container}>{switchRoutes}</div>
-            </div>
-          ) : (
-            <div className={classes.map}>{switchRoutes}</div>
-          )}
-          {this.getRoute() ? <Footer /> : null}
+          />
+          <div className={classes.mainPanel} ref="mainPanel">
+            {/* <Header
+              routes={dashboardRoutes}
+              handleDrawerToggle={this.handleDrawerToggle}
+              {...rest}
+            /> */}
+            {/* On the /maps route we want the map to be on full screen - this is not possible if the content and conatiner classes are present because they have some paddings which would make the map smaller */}
+            {this.getRoute() ? (
+              <div className={classes.content}>
+                <div className={classes.container}>{switchRoutes}</div>
+              </div>
+            ) : (
+              <div className={classes.map}>{switchRoutes}</div>
+            )}
+            {this.getRoute() ? <Footer /> : null}
+          </div>
         </div>
-      </div>
+      </BlockUi>
     );
   }
 }

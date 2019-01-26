@@ -13,7 +13,8 @@ import Switch from '@material-ui/core/Switch';
 import Table from "components/Table/Table.jsx";
 
 import web3 from "../../libs/web3";
-import { getErc20BalanceAsync } from "./erc20GetBalanceAsync";
+import web3Utils from "../../libs/web3Utils";
+import { getErc20BalanceAsync } from "../../libs/erc20GetBalanceAsync";
 import {
   BigNumber,
   ContractWrappers
@@ -66,42 +67,56 @@ class WrapAllowance extends Component {
     // for wrap unwrap
     depositAmount: 0,
     withdrawAmount: 0,
+
+    web3Enable: false
   };
+
+  async componentWillMount() {
+    let web3Enable = false;
+    if (await web3Utils.isKovanNetwork(web3)) {
+      const providerEngine = metamaskProvider(window.web3.currentProvider);
+      const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
+      const etherTokenAddress = contractAddresses['etherToken'];
+      const zrxTokenAddress = contractAddresses['zrxToken'];
+
+      // get allowance status
+      const addresses = await web3.eth.getAccounts();
+      if (addresses.length > 0) {
+        const address = addresses[0];
+        await this.setState({ address: address });
+
+        const balance = await web3.eth.getBalance(address);
+        await this.setState({ balance: await web3.utils.fromWei(balance, 'ether') });
+
+        const etherAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
+          etherTokenAddress,
+          address,
+          contractAddresses['erc20Proxy']
+        );
+        const zrxAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
+          zrxTokenAddress,
+          address,
+          contractAddresses['erc20Proxy']
+        );
+
+        await this.setState({ etherAllowance: etherAllowance > 0 ? true : false });
+        await this.setState({ zrxAllowance: zrxAllowance > 0 ? true : false });
+
+        const wetherBalance = await getErc20BalanceAsync(address, etherTokenAddress);
+        const zrxBalance = await getErc20BalanceAsync(address, zrxTokenAddress);
+
+        await this.setState({ wetherBalance: wetherBalance });
+        await this.setState({ zrxBalance: zrxBalance });
+
+        // Kovanかつログイン済みならOK
+        web3Enable = true;
+      }
+    }
+    await this.setState({ web3Enable: web3Enable });
+  }
 
   async componentDidMount() {
-    const providerEngine = metamaskProvider(window.web3.currentProvider);
-    const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
-    const etherTokenAddress = contractAddresses['etherToken'];
-    const zrxTokenAddress = contractAddresses['zrxToken'];
-
-    // get allowance status
-    const addresses = await web3.eth.getAccounts();
-    const address = addresses[0];
-    await this.setState({ address: address });
-
-    const balance = await web3.eth.getBalance(address);
-    await this.setState({ balance: await web3.utils.fromWei(balance, 'ether') });
-
-    const etherAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
-      etherTokenAddress,
-      address,
-      contractAddresses['erc20Proxy']
-    );
-    const zrxAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
-      zrxTokenAddress,
-      address,
-      contractAddresses['erc20Proxy']
-    );
-
-    await this.setState({ etherAllowance: etherAllowance > 0 ? true : false });
-    await this.setState({ zrxAllowance: zrxAllowance > 0 ? true : false });
-
-    const wetherBalance = await getErc20BalanceAsync(address, etherTokenAddress);
-    const zrxBalance = await getErc20BalanceAsync(address, zrxTokenAddress);
-
-    await this.setState({ wetherBalance: wetherBalance });
-    await this.setState({ zrxBalance: zrxBalance });
-  };
+  }
 
   // Allowance
   allowanceHandleChange = async(event) => {
@@ -117,7 +132,7 @@ class WrapAllowance extends Component {
     );
 
     await this.setState({ [id]: checked });
-  };
+  }
 
   // Wrap Unwrap
   depositClick = async() => {
@@ -132,7 +147,7 @@ class WrapAllowance extends Component {
     );
 
     console.log('depositHash:', depositTxHash);
-  };
+  }
 
   withdrawClick = async() => {
     const etherTokenAddress = contractAddresses['etherToken'];
@@ -165,7 +180,7 @@ class WrapAllowance extends Component {
             fullWidth: true
           }}
         />,
-        <Button onClick={this.depositClick} color="primary">WETHにする</Button>
+        <Button onClick={this.depositClick} color="primary" disabled={ !this.state.web3Enable }>WETHにする</Button>
       ],
       [
         "WETH",
@@ -180,7 +195,7 @@ class WrapAllowance extends Component {
             fullWidth: true
           }}
         />,
-        <Button onClick={this.withdrawClick} color="primary">ETHにする</Button>
+        <Button onClick={this.withdrawClick} color="primary" disabled={ !this.state.web3Enable }>ETHにする</Button>
       ]
     ];
     const allowanceTableData = [
@@ -193,6 +208,7 @@ class WrapAllowance extends Component {
           onChange={this.allowanceHandleChange}
           id='etherAllowance'
           value='etherToken'
+          disabled={ !this.state.web3Enable }
         />
       ],
       [
@@ -204,6 +220,7 @@ class WrapAllowance extends Component {
           onChange={this.allowanceHandleChange}
           id='zrxAllowance'
           value='zrxToken'
+          disabled={ !this.state.web3Enable }
         />
       ]
     ];

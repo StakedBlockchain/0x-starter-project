@@ -1,6 +1,5 @@
 // @material-ui/icons
 import Dashboard from "@material-ui/icons/Dashboard";
-import Person from "@material-ui/icons/Person";
 import Unarchive from "@material-ui/icons/Unarchive";
 // core components/views
 import Home from "views/Home/Home.jsx";
