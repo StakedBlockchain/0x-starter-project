@@ -21,4 +21,6 @@ for (const tokenAddress of ERC721_TOKENS_BY_NETWORK_ID[NETWORK_CONFIGS.networkId
     );
 }
 
-export const contractAddresses = getContractAddressesForNetworkOrThrow(NETWORK_CONFIGS.networkId);
+let contractAddresses = getContractAddressesForNetworkOrThrow(NETWORK_CONFIGS.networkId);
+
+export { contractAddresses };

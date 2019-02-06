@@ -7,6 +7,9 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
+
+import Tabs from '@material-ui/core/Tabs';
+import Tab from '@material-ui/core/Tab';
 // core components
 import GridItem from "components/Grid/GridItem.jsx";
 import GridContainer from "components/Grid/GridContainer.jsx";
@@ -50,12 +53,14 @@ import {
 
 import { contractAddresses } from '../../contracts';
 import { metamaskProvider } from '../../provider_engine';
+import { CardContent } from "@material-ui/core";
 
 const styles = theme => ({
   // for selectbox
   root: {
     display: 'flex',
     flexWrap: 'wrap',
+    flexGrow: 1,
   },
   formControl: {
     margin: theme.spacing.unit,
@@ -81,22 +86,28 @@ const styles = theme => ({
     marginBottom: "3px",
     textDecoration: "none"
   },
+  centerBlock: {
+    margin: "0 auto"
+  },
+  textCenter: {
+    textAlign: "center"
+  },
 });
 const activeOpacity = 1.0;
 const inactiveOpacity = 0.6;
-const assetType = {
-  'WETH': 'etherToken',
-  'ZRX': 'zrxToken'
-};
+const assetPair = {
+  'WETH/ZRX': 'etherToken/zrxToken'
+}
 
 class Orders extends Component {
   state = {
     address: '',
     wetherBalance: 0,
     zrxBalance: 0,
+    assetPair: 'etherToken/zrxToken',
     makerAssetType: 'etherToken',
-    takerAssetType: 'zrxToken',
     makerAmount: 0,
+    takerAssetType: 'zrxToken',
     takerAmount: 0,
     expiration: 0,
     taker: '',
@@ -112,14 +123,16 @@ class Orders extends Component {
     generateOrderStyle: { opacity: activeOpacity },
     fillOrderStyle: { opacity: inactiveOpacity },
 
-    web3Enable: false
+    web3Enable: false,
+
+    tabValue: 0
   }
 
   async componentWillMount() {
     if (await web3Utils.isKovanNetwork(web3)) {
       const addresses = await web3.eth.getAccounts();
       if (addresses.length > 0) {
-        const address = addresses[0].toLowerCase()
+        const address = addresses[0].toLowerCase();
         await this.setState({ address: address });
 
         const etherTokenAddress = contractAddresses['etherToken'];
@@ -131,31 +144,37 @@ class Orders extends Component {
         await this.setState({ zrxBalance: zrxBalance });
 
         metamaskProvider(web3.currentProvider);
-        await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
+
+        const assetPairList = this.state.assetPair.split('/');
+        await this.reloadOrder(assetPairList[0], assetPairList[1]);
 
         await this.setState({ web3Enable: true });
       }
     }
   }
 
-  async componentDidMount() {
-  }
-
   handleChangeIndex = index => {
     this.setState({ value: index });
   }
 
-  changeAssetType = async(e) => {
-    const stateName = e.target.name;
-    const stateValue = e.target.value;
-    await this.setState({ [stateName]: stateValue });
-
-    // @memo: あとで仕組み考える
-    const otherStateName = stateName === 'makerAssetType' ? 'takerAssetType' : 'makerAssetType';
-    const otherStateValue = stateValue === 'etherToken' ? 'zrxToken' : 'etherToken';
-    await this.setState({ [otherStateName]: otherStateValue });
-
+  handleTab = async(event, value) => {
+    this.setState({ tabValue: value });
+    await this.setAssetType();
     await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
+  };
+
+  changeAssetType = async(e) => {
+    this.setState({ assetPair: e.target.value });
+    await this.setAssetType();
+    await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
+  }
+
+  setAssetType = async() => {
+    const assetPairList = this.state.assetPair.split('/');
+    const buyAssetIndex = this.state.tabValue;
+    const sellAssetIndex = this.state.tabValue === 0 ? 1 : 0;
+    this.setState({ makerAssetType: assetPairList[buyAssetIndex] });
+    this.setState({ takerAssetType: assetPairList[sellAssetIndex] });
   }
 
   reloadOrder = async(makerAssetType, takerAssetType) => {
@@ -247,8 +266,6 @@ class Orders extends Component {
   };
 
   orderClick = async(index) => {
-    console.log('order:', this.state.orderList[index].order);
-
     // set index
     await this.setState({ selectedOrderIndex: index });
 
@@ -319,31 +336,33 @@ class Orders extends Component {
                       }}
                     />
                   </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="YOUR WETH BALANCE"
-                      id="your-weth-balance"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true,
-                        value: this.state.wetherBalance
-                      }}
-                    />
+                  <GridItem xs={6} sm={3} md={3}>
+                    <Card>
+                      <CardContent>
+                        <GridContainer>
+                          <GridItem xs={12} sm={4} md={4}>
+                            <img src="https://0x.org/images/token_icons/WETH.png" width="40" />
+                          </GridItem>
+                          <GridItem xs={12} sm={6} md={6}>
+                            { this.state.wetherBalance } WETH
+                          </GridItem>
+                        </GridContainer>
+                      </CardContent>
+                    </Card>
                   </GridItem>
-                  <GridItem xs={12} sm={12} md={12}>
-                    <CustomInput
-                      labelText="YOUR ZRX BALANCE"
-                      id="your-zrx-balance"
-                      formControlProps={{
-                        fullWidth: true
-                      }}
-                      inputProps={{
-                        readOnly: true,
-                        value: this.state.zrxBalance
-                      }}
-                    />
+                  <GridItem xs={6} sm={3} md={3}>
+                    <Card>
+                      <CardContent>
+                        <GridContainer>
+                          <GridItem xs={12} sm={4} md={4}>
+                            <img src="https://0x.org/images/token_icons/ZRX.png" width="40" />
+                          </GridItem>
+                          <GridItem xs={12} sm={6} md={6}>
+                            { this.state.zrxBalance } ZRX
+                          </GridItem>
+                        </GridContainer>
+                      </CardContent>
+                    </Card>
                   </GridItem>
                 </GridContainer>
               </CardBody>
@@ -358,40 +377,32 @@ class Orders extends Component {
                 <CardBody>
                   <GridContainer>
                     <GridItem xs={12} sm={12} md={12}>
-                      <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="maker-asset-type">差出すAsset</InputLabel>
-                        <Select
-                          labelText="Maker Asset Type"
-                          value={this.state.makerAssetType}
-                          onChange={this.changeAssetType}
-                          inputProps={{
-                            id: 'maker-asset-type',
-                            name: 'makerAssetType'
-                          }}
-                        >
-                          {Object.keys(assetType).map((value, index) => {
-                            return (
-                              <MenuItem value={assetType[value]}>{value}</MenuItem>
-                            )
-                          })}
-                        </Select>
-                      </FormControl>
+                      <Tabs
+                        value={this.state.tabValue}
+                        onChange={this.handleTab}
+                        indicatorColor="primary"
+                        textColor="primary"
+                        centered
+                      >
+                        <Tab label="買い" />
+                        <Tab label="売り" />
+                      </Tabs>
                     </GridItem>
                     <GridItem xs={12} sm={12} md={12}>
                       <FormControl className={classes.formControl}>
-                        <InputLabel htmlFor="taker-asset-type">受け取るAsset</InputLabel>
+                        <InputLabel htmlFor="asset-pair">Asset Pair</InputLabel>
                         <Select
-                          labelText="Taker Asset Type"
-                          value={this.state.takerAssetType}
+                          labelText="Asset Pair"
+                          value={this.state.assetPair}
                           onChange={this.changeAssetType}
                           inputProps={{
-                            id: 'taker-asset-type',
-                            name: 'takerAssetType'
+                            id: 'asset-pair',
+                            name: 'assetPair'
                           }}
                         >
-                          {Object.keys(assetType).map((value, index) => {
+                          {Object.keys(assetPair).map((value, index) => {
                             return (
-                              <MenuItem value={assetType[value]}>{value}</MenuItem>
+                              <MenuItem value={assetPair[value]}>{value}</MenuItem>
                             )
                           })}
                         </Select>
@@ -419,32 +430,15 @@ class Orders extends Component {
                         }}
                       />
                     </GridItem>
-                    {/* <GridItem xs={12} sm={12} md={12}>
-                      <CustomInput
-                        labelText="Expiration"
-                        id="expiration"
-                        value={this.state.expiration}
-                        onChange={event => this.setState({ expiration: event.target.value })}
-                        formControlProps={{
-                          fullWidth: true
-                        }}
-                      />
-                    </GridItem> */}
-                    {/* <GridItem xs={12} sm={12} md={12}>
-                      <CustomInput
-                        labelText="Taker"
-                        id="taker"
-                        value={this.state.taker}
-                        onChange={event => this.setState({ taker: event.target.value })}
-                        formControlProps={{
-                          fullWidth: true
-                        }}
-                      />
-                    </GridItem> */}
                   </GridContainer>
                 </CardBody>
                 <CardFooter>
-                  <Button onClick={ this.submitOrderClick } color="primary" disabled={ !this.state.web3Enable }>オーダーを作成する</Button>
+                  {this.state.tabValue === 0 &&
+                    <Button onClick={ this.submitOrderClick } color="primary" disabled={ !this.state.web3Enable }>購入する</Button>
+                  }
+                  {this.state.tabValue === 1 &&
+                    <Button onClick={ this.submitOrderClick } color="primary" disabled={ !this.state.web3Enable }>売却する</Button>
+                  }
                 </CardFooter>
               </Card>
             </div>
