@@ -7,13 +7,13 @@ import Orders from "views/Orders/Orders.jsx";
 import WrapAllowance from "views/WrapAllowance/WrapAllowance.jsx";
 
 const dashboardRoutes = [
-  {
-    path: "/home",
-    sidebarName: "Home",
-    navbarName: "Staked",
-    icon: Dashboard,
-    component: Home
-  },
+  // {
+  //   path: "/home",
+  //   sidebarName: "Home",
+  //   navbarName: "Staked",
+  //   icon: Dashboard,
+  //   component: Home
+  // },
   {
     path: "/wrap_allowance",
     sidebarName: "Wrap / Allowance",
@@ -38,7 +38,7 @@ const dashboardRoutes = [
       return null;
     }
   },
-  { redirect: true, path: "/", to: "/home", navbarName: "Redirect" }
+  { redirect: true, path: "/", to: "/wrap_allowance", navbarName: "Redirect" }
 ];
 
 export default dashboardRoutes;
