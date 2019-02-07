@@ -60,9 +60,16 @@ class WrapAllowance extends Component {
     address: '',
     etherAllowance: false,
     zrxAllowance: false,
+    repAllowance: false,
+    daiAllowance: false,
+    omgAllowance: false,
+
     balance: 0,
     wetherBalance: 0,
     zrxBalance: 0,
+    repBalance: 0,
+    daiBalance: 0,
+    omgBalance: 0,
 
     // for wrap unwrap
     depositAmount: 0,
@@ -78,6 +85,9 @@ class WrapAllowance extends Component {
       const contractWrappers = new ContractWrappers(providerEngine, { networkId: NETWORK_CONFIGS.networkId });
       const etherTokenAddress = contractAddresses['etherToken'];
       const zrxTokenAddress = contractAddresses['zrxToken'];
+      const repTokenAddress = contractAddresses['repToken'];
+      const daiTokenAddress = contractAddresses['daiToken'];
+      const omgTokenAddress = contractAddresses['omgToken'];
 
       // get allowance status
       const addresses = await web3.eth.getAccounts();
@@ -98,15 +108,39 @@ class WrapAllowance extends Component {
           address,
           contractAddresses['erc20Proxy']
         );
+        const repAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
+          repTokenAddress,
+          address,
+          contractAddresses['erc20Proxy']
+        );
+        const daiAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
+          daiTokenAddress,
+          address,
+          contractAddresses['erc20Proxy']
+        );
+        const omgAllowance = await contractWrappers.erc20Token.getAllowanceAsync(
+          omgTokenAddress,
+          address,
+          contractAddresses['erc20Proxy']
+        );
 
         await this.setState({ etherAllowance: etherAllowance > 0 ? true : false });
         await this.setState({ zrxAllowance: zrxAllowance > 0 ? true : false });
+        await this.setState({ repAllowance: repAllowance > 0 ? true : false });
+        await this.setState({ daiAllowance: daiAllowance > 0 ? true : false });
+        await this.setState({ omgAllowance: omgAllowance > 0 ? true : false });
 
         const wetherBalance = await getErc20BalanceAsync(address, etherTokenAddress);
         const zrxBalance = await getErc20BalanceAsync(address, zrxTokenAddress);
+        const repBalance = await getErc20BalanceAsync(address, repTokenAddress);
+        const daiBalance = await getErc20BalanceAsync(address, daiTokenAddress);
+        const omgBalance = await getErc20BalanceAsync(address, omgTokenAddress);
 
         await this.setState({ wetherBalance: wetherBalance });
         await this.setState({ zrxBalance: zrxBalance });
+        await this.setState({ repBalance: repBalance });
+        await this.setState({ daiBalance: daiBalance });
+        await this.setState({ omgBalance: omgBalance });
 
         // Kovanかつログイン済みならOK
         web3Enable = true;
@@ -220,6 +254,42 @@ class WrapAllowance extends Component {
           onChange={this.allowanceHandleChange}
           id='zrxAllowance'
           value='zrxToken'
+          disabled={ !this.state.web3Enable }
+        />
+      ],
+      [
+        "REP",
+        <img src="https://0x.org/images/token_icons/REP.png" width="30" />,
+        this.state.repBalance,
+        <Switch
+          checked={this.state.repAllowance}
+          onChange={this.allowanceHandleChange}
+          id='repAllowance'
+          value='repToken'
+          disabled={ !this.state.web3Enable }
+        />
+      ],
+      [
+        "DAI",
+        <img src="https://0x.org/images/token_icons/DAI.png" width="30" />,
+        this.state.daiBalance,
+        <Switch
+          checked={this.state.daiAllowance}
+          onChange={this.allowanceHandleChange}
+          id='daiAllowance'
+          value='daiToken'
+          disabled={ !this.state.web3Enable }
+        />
+      ],
+      [
+        "OMG",
+        <img src="https://0x.org/images/token_icons/OMG.png" width="30" />,
+        this.state.omgBalance,
+        <Switch
+          checked={this.state.omgAllowance}
+          onChange={this.allowanceHandleChange}
+          id='omgAllowance'
+          value='omgToken'
           disabled={ !this.state.web3Enable }
         />
       ]
