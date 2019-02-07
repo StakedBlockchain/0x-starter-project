@@ -96,7 +96,16 @@ const styles = theme => ({
 const activeOpacity = 1.0;
 const inactiveOpacity = 0.6;
 const assetPair = {
-  'WETH/ZRX': 'etherToken/zrxToken'
+  'WETH/ZRX': 'etherToken/zrxToken',
+  'WETH/REP': 'etherToken/repToken',
+  'WETH/DAI': 'etherToken/daiToken',
+  'WETH/OMG': 'etherToken/omgToken',
+  'ZRX/REP': 'zrxToken/repToken',
+  'ZRX/DAI': 'zrxToken/daiToken',
+  'ZRX/OMG': 'zrxToken/omgToken',
+  'REP/DAI': 'repToken/daiToken',
+  'REP/OMG': 'repToken/omgToken',
+  'DAI/OMG': 'daiToken/omgToken',
 }
 
 class Orders extends Component {
@@ -104,6 +113,9 @@ class Orders extends Component {
     address: '',
     wetherBalance: 0,
     zrxBalance: 0,
+    repBalance: 0,
+    daiBalance: 0,
+    omgBalance: 0,
     assetPair: 'etherToken/zrxToken',
     makerAssetType: 'etherToken',
     makerAmount: 0,
@@ -137,11 +149,20 @@ class Orders extends Component {
 
         const etherTokenAddress = contractAddresses['etherToken'];
         const zrxTokenAddress = contractAddresses['zrxToken'];
+        const repTokenAddress = contractAddresses['repToken'];
+        const daiTokenAddress = contractAddresses['daiToken'];
+        const omgTokenAddress = contractAddresses['omgToken'];
         const wetherBalance = await getErc20BalanceAsync(address, etherTokenAddress);
         const zrxBalance = await getErc20BalanceAsync(address, zrxTokenAddress);
+        const repBalance = await getErc20BalanceAsync(address, repTokenAddress);
+        const daiBalance = await getErc20BalanceAsync(address, daiTokenAddress);
+        const omgBalance = await getErc20BalanceAsync(address, omgTokenAddress);
 
         await this.setState({ wetherBalance: wetherBalance });
         await this.setState({ zrxBalance: zrxBalance });
+        await this.setState({ repBalance: repBalance });
+        await this.setState({ daiBalance: daiBalance });
+        await this.setState({ omgBalance: omgBalance });
 
         metamaskProvider(web3.currentProvider);
 
@@ -158,13 +179,13 @@ class Orders extends Component {
   }
 
   handleTab = async(event, value) => {
-    this.setState({ tabValue: value });
+    await this.setState({ tabValue: value });
     await this.setAssetType();
     await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   };
 
   changeAssetType = async(e) => {
-    this.setState({ assetPair: e.target.value });
+    await this.setState({ assetPair: e.target.value });
     await this.setAssetType();
     await this.reloadOrder(this.state.makerAssetType, this.state.takerAssetType);
   }
@@ -173,8 +194,8 @@ class Orders extends Component {
     const assetPairList = this.state.assetPair.split('/');
     const buyAssetIndex = this.state.tabValue;
     const sellAssetIndex = this.state.tabValue === 0 ? 1 : 0;
-    this.setState({ makerAssetType: assetPairList[buyAssetIndex] });
-    this.setState({ takerAssetType: assetPairList[sellAssetIndex] });
+    await this.setState({ makerAssetType: assetPairList[buyAssetIndex] });
+    await this.setState({ takerAssetType: assetPairList[sellAssetIndex] });
   }
 
   reloadOrder = async(makerAssetType, takerAssetType) => {
@@ -359,6 +380,48 @@ class Orders extends Component {
                           </GridItem>
                           <GridItem xs={12} sm={6} md={6}>
                             { this.state.zrxBalance } ZRX
+                          </GridItem>
+                        </GridContainer>
+                      </CardContent>
+                    </Card>
+                  </GridItem>
+                  <GridItem xs={6} sm={3} md={3}>
+                    <Card>
+                      <CardContent>
+                        <GridContainer>
+                          <GridItem xs={12} sm={4} md={4}>
+                            <img src="https://0x.org/images/token_icons/REP.png" width="40" />
+                          </GridItem>
+                          <GridItem xs={12} sm={6} md={6}>
+                            { this.state.repBalance } REP
+                          </GridItem>
+                        </GridContainer>
+                      </CardContent>
+                    </Card>
+                  </GridItem>
+                  <GridItem xs={6} sm={3} md={3}>
+                    <Card>
+                      <CardContent>
+                        <GridContainer>
+                          <GridItem xs={12} sm={4} md={4}>
+                            <img src="https://0x.org/images/token_icons/DAI.png" width="40" />
+                          </GridItem>
+                          <GridItem xs={12} sm={6} md={6}>
+                            { this.state.daiBalance } DAI
+                          </GridItem>
+                        </GridContainer>
+                      </CardContent>
+                    </Card>
+                  </GridItem>
+                  <GridItem xs={6} sm={3} md={3}>
+                    <Card>
+                      <CardContent>
+                        <GridContainer>
+                          <GridItem xs={12} sm={4} md={4}>
+                            <img src="https://0x.org/images/token_icons/OMG.png" width="40" />
+                          </GridItem>
+                          <GridItem xs={12} sm={6} md={6}>
+                            { this.state.omgBalance } OMG
                           </GridItem>
                         </GridContainer>
                       </CardContent>

@@ -22,5 +22,10 @@ for (const tokenAddress of ERC721_TOKENS_BY_NETWORK_ID[NETWORK_CONFIGS.networkId
 }
 
 let contractAddresses = getContractAddressesForNetworkOrThrow(NETWORK_CONFIGS.networkId);
+if (NETWORK_CONFIGS.networkId === KOVAN_NETWORK_ID) {
+    contractAddresses.repToken = '0x2ecf4e28b0387113012ab2e6d5f60d5333ea2180';
+    contractAddresses.daiToken = '0x5d5026a276a5cc828980c2ed74ef35039f7ef72e';
+    contractAddresses.omgToken = '0x7dc75361d616f4d5748a9f050d7cbb8ca3781b0b';
+}
 
 export { contractAddresses };
